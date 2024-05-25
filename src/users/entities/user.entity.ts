@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
+import { Category } from "src/categories/entities/category.entity";
+import { Product } from "src/products/entities/product.entity";
 
 @Entity()
 export class User {
@@ -7,7 +9,7 @@ export class User {
     id: string;
 
     @Column({ nullable: false})
-    full_name: string;
+    fullName: string;
 
     @Column({ unique: true, nullable: true})
     email: string;
@@ -18,8 +20,14 @@ export class User {
     @Column()
     password: string;
 
-    //   @OneToMany(() => Post, post => post.user)
-    //     posts: Post[];
+    // @OneToMany(() => Category, category => category.user)
+    // categories: Category[];
+
+    @OneToMany(() => Category, category => category.user)
+    categories: Category[];
+
+    @OneToMany(() => Product, product => product.user)
+    products: Product[];
 
     async validatePassword(password: string): Promise<boolean> {
         return bcrypt.compare(password, this.password);

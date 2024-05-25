@@ -14,11 +14,11 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<{ message: string; user: Partial<User> }> {
-    const { full_name, email, mobile, password } = createUserDto;
+    const { fullName, email, mobile, password } = createUserDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = new User();
-    user.full_name = full_name;
+    user.fullName = fullName;
     user.email = email;
     user.mobile = mobile;
     user.password = hashedPassword;
@@ -42,7 +42,7 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.userRepository.find({
-      select: ['id', 'full_name', 'email', 'mobile']
+      select: ['id', 'fullName', 'email', 'mobile']
     });
   }
 

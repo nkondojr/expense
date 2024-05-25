@@ -9,6 +9,8 @@ import { User } from './users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ConfigurationModule } from 'config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Category } from './categories/entities/category.entity';
+import { Product } from './products/entities/product.entity';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: ConfigService.get('DB_USERNAME'),
         password: ConfigService.get('DB_PASSWORD'),
         database: ConfigService.get('DB_NAME'),
-        entities: [User],
+        entities: [User, Category, Product],
         // entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         // do NOT use synchronize: true in real projects
         synchronize: true,
