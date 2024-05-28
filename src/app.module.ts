@@ -11,6 +11,10 @@ import { ConfigurationModule } from 'config/config.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category } from './categories/entities/category.entity';
 import { Product } from './products/entities/product.entity';
+import { ExpenseModule } from './expense/expense.module';
+import { Expense } from './expense/entities/expense.entity';
+import { ExpenseItemsModule } from './expense_items/expense_items.module';
+import { ExpenseItem } from './expense_items/entities/expense_item.entity';
 
 @Module({
   imports: [
@@ -26,7 +30,7 @@ import { Product } from './products/entities/product.entity';
         username: ConfigService.get('DB_USERNAME'),
         password: ConfigService.get('DB_PASSWORD'),
         database: ConfigService.get('DB_NAME'),
-        entities: [User, Category, Product],
+        entities: [User, Category, Product, Expense, ExpenseItem],
         // entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         // do NOT use synchronize: true in real projects
         synchronize: true,
@@ -36,7 +40,9 @@ import { Product } from './products/entities/product.entity';
     UsersModule,
     AuthenticationModule,
     CategoriesModule,
-    ProductsModule],
+    ProductsModule,
+    ExpenseModule,
+    ExpenseItemsModule],
   controllers: [AppController],
   providers: [AppService],
 })
