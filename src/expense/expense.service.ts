@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
@@ -15,6 +15,7 @@ export class ExpenseService {
     private expenseItemsRepository: Repository<ExpenseItem>,
   ) {}
 
+// ***********************************************************************************************************************************************
   async create(createExpenseDto: CreateExpenseDto): Promise<Expense> {
     const { date, amount, description, attachment, expenseItems } = createExpenseDto;
     const imageUrl = saveImage(attachment);
@@ -42,13 +43,63 @@ export class ExpenseService {
     return savedExpense;
   }
  
-  async findAll(): Promise<any[]> {
-    const expenses = await this.expenseRepository.find({
+// ***********************************************************************************************************************************************
+
+  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
+    const query = this.expenseRepository.createQueryBuilder('expense')
+      .select([
+        'expense.id',
+        'expense.date',
+        'expense.amount',
+        'expense.description',
+        'expense.attachment',
+        'expense.createdAt',
+      ]);
+
+    if (searchTerm) {
+      query.where('expense.description LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+    }
+
+    query.skip((page - 1) * pageSize).take(pageSize);
+
+    const [expenses, total] = await query.getManyAndCount();
+    const lastPage = Math.ceil(total / pageSize);
+
+    const result = expenses.map(expense => ({
+      id: expense.id,
+      date: expense.date,
+      amount: expense.amount,
+      description: expense.description,
+      attachment: expense.attachment,
+      createdAt: expense.createdAt,
+    }));
+
+    return {
+      links: {
+        next: page < lastPage ? `/expenses?page=${page + 1}&pageSize=${pageSize}` : null,
+        previous: page > 1 ? `/expenses?page=${page - 1}&pageSize=${pageSize}` : null
+      },
+      count: total,
+      lastPage: lastPage,
+      currentPage: page,
+      data: result
+    };
+  }
+
+// ***********************************************************************************************************************************************
+
+  async findOne(id: string): Promise<any> {
+    const expense = await this.expenseRepository.findOne({
+      where: { id },
       relations: ['expenseItems', 'expenseItems.product'],
     });
-  
-    // Map the expenses to include only the required fields
-    const result = expenses.map(expense => ({
+
+    if (!expense) {
+      throw new NotFoundException(`Expense with ID ${id} not found`);
+    }
+    
+    // Transform the expense object
+    const result = {
       id: expense.id,
       date: expense.date,
       amount: expense.amount,
@@ -60,22 +111,13 @@ export class ExpenseService {
         quantity: item.quantity,
         price: item.price,
         productId: item.product.id,
-        productName: item.product.name, // Include product name
+        productName: item.product.name,
       })),
-    }));
-  
+    };
     return result;
   }
 
-  async findOne(id: string): Promise<Expense> {
-    const expense = await this.expenseRepository.findOne({
-      where: { id },
-      relations: ['expenseItems', 'expenseItems.product'],
-    });
-    return expense;
-  }
-  
-
+// ***********************************************************************************************************************************************
   async remove(id: string): Promise<void> {
     await this.expenseRepository.delete(id);
   }

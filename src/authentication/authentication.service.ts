@@ -22,6 +22,7 @@ export class AuthenticationService {
     private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
   ) {}
 
+// ***********************************************************************************************************************************************
   async signIn(createAuthenticationDto: CreateAuthenticationDto) {
     const user = await this.validateUser(
       createAuthenticationDto.mobile,
@@ -46,6 +47,7 @@ export class AuthenticationService {
     };
   }
 
+// ***********************************************************************************************************************************************
   async validateUser(mobile: string, password: string): Promise<any> {
     const user = await this.usersService.findByMobile(mobile);
     if (user && (await user.validatePassword(password))) {
@@ -55,6 +57,7 @@ export class AuthenticationService {
     return null;
   }
 
+// ***********************************************************************************************************************************************
   async refreshAccessToken(
     refreshToken: string,
   ): Promise<{ access_token: string }> {
@@ -70,6 +73,7 @@ export class AuthenticationService {
     }
   }
 
+// ***********************************************************************************************************************************************
   async invalidateToken(accessToken: string): Promise<void> {
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken);
@@ -79,6 +83,7 @@ export class AuthenticationService {
     }
   }
 
+// ***********************************************************************************************************************************************
   // async getProfile(accessToken: string): Promise<User> {
   //   try {
   //     const decoded = await this.jwtService.verifyAsync(accessToken);
@@ -93,6 +98,7 @@ export class AuthenticationService {
   //   }
   // }
 
+// ***********************************************************************************************************************************************
   async getProfile(accessToken: string): Promise<Partial<User>> {
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken);

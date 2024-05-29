@@ -13,6 +13,7 @@ export class CategoriesService {
     private categoryRepository: Repository<Category>,
   ) {}
 
+// ***********************************************************************************************************************************************
   async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<Category> {
     const category = this.categoryRepository.create({
       ...createCategoryDto,
@@ -21,9 +22,21 @@ export class CategoriesService {
     return this.categoryRepository.save(category);
   }
 
-  async findAll(): Promise<Category[]> {
-    const categories = await this.categoryRepository.find({ relations: ['user'] });
-    
+// ***********************************************************************************************************************************************
+  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
+    const query = this.categoryRepository.createQueryBuilder('category')
+      .leftJoinAndSelect('category.user', 'user')
+      .select(['category.id', 'category.name', 'user.id', 'user.fullName']);
+
+    if (searchTerm) {
+      query.where('category.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+    }
+
+    query.skip((page - 1) * pageSize).take(pageSize);
+
+    const [categories, total] = await query.getManyAndCount();
+    const lastPage = Math.ceil(total / pageSize);
+
     categories.forEach(category => {
       if (category.user) {
         category['createdBy'] = category.user.id;
@@ -31,9 +44,20 @@ export class CategoriesService {
         delete category.user;
       }
     });
-    return categories;
+
+    return {
+      links: {
+        next: page < lastPage ? `/categories?page=${page + 1}&pageSize=${pageSize}` : null,
+        previous: page > 1 ? `/categories?page=${page - 1}&pageSize=${pageSize}` : null
+      },
+      count: total,
+      lastPage: lastPage,
+      currentPage: page,
+      data: categories
+    };
   }
 
+// ***********************************************************************************************************************************************
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({ where: { id }, relations: ['user'] });
 

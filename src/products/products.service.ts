@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
@@ -12,6 +12,7 @@ export class ProductsService {
     private productRepository: Repository<Product>,
   ) {}
 
+// ***********************************************************************************************************************************************
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const { name, price, description, image, categoryId } = createProductDto;
     const imageUrl = saveImage(image);
@@ -26,8 +27,29 @@ export class ProductsService {
     return await this.productRepository.save(product);
   }
 
-  async findAll(): Promise<Product[]> {
-    const products = await this.productRepository.find({ relations: ['category'] });
+// ***********************************************************************************************************************************************
+  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
+    const query = this.productRepository.createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .select([
+        'product.id',
+        'product.name',
+        'product.price',
+        'product.description',
+        'product.image',
+        'product.categoryId',
+        'product.createdAt',
+        'category.name',
+      ]);
+
+    if (searchTerm) {
+      query.where('product.name LIKE :searchTerm OR category.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+    }
+
+    query.skip((page - 1) * pageSize).take(pageSize);
+
+    const [products, total] = await query.getManyAndCount();
+    const lastPage = Math.ceil(total / pageSize);
 
     products.forEach(product => {
       if (product.category) {
@@ -35,10 +57,38 @@ export class ProductsService {
         delete product.category;
       }
     });
-    return products;
+
+    return {
+      links: {
+        next: page < lastPage ? `/products?page=${page + 1}&pageSize=${pageSize}` : null,
+        previous: page > 1 ? `/products?page=${page - 1}&pageSize=${pageSize}` : null
+      },
+      count: total,
+      lastPage: lastPage,
+      currentPage: page,
+      data: products
+    };
   }
 
-  async findOne(id: string): Promise<Product> {
-    return this.productRepository.findOne({ where: { id }, relations: ['category'] });
+// ***********************************************************************************************************************************************
+  async findOne(id: string): Promise<any> {
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    // Transform the product object
+    const result = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      category_name: product.category.name,
+    };
+
+    return result;
   }
 }
