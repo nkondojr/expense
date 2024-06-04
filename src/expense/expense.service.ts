@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { Expense } from './entities/expense.entity';
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
 import { saveImage } from 'utils/image.utils';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class ExpenseService {
@@ -16,7 +17,7 @@ export class ExpenseService {
   ) {}
 
 // ***********************************************************************************************************************************************
-  async create(createExpenseDto: CreateExpenseDto): Promise<Expense> {
+  async create(createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
     const { date, amount, description, attachment, expenseItems } = createExpenseDto;
     const imageUrl = saveImage(attachment);
 
@@ -35,13 +36,17 @@ export class ExpenseService {
       expenseItem.price = item.price;
       expenseItem.expense = savedExpense;
       expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
+
       return expenseItem;
     });
 
     await this.expenseItemsRepository.save(expenseItemsEntities);
 
-    return savedExpense;
+    return {
+      message: 'Expense created successfully',
+    };
   }
+
  
 // ***********************************************************************************************************************************************
 
@@ -87,17 +92,21 @@ export class ExpenseService {
   }
 
 // ***********************************************************************************************************************************************
-
   async findOne(id: string): Promise<any> {
+    // Validate the ID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+  
     const expense = await this.expenseRepository.findOne({
       where: { id },
       relations: ['expenseItems', 'expenseItems.product'],
     });
-
+  
     if (!expense) {
       throw new NotFoundException(`Expense with ID ${id} not found`);
     }
-    
+  
     // Transform the expense object
     const result = {
       id: expense.id,
@@ -114,6 +123,7 @@ export class ExpenseService {
         productName: item.product.name,
       })),
     };
+  
     return result;
   }
 

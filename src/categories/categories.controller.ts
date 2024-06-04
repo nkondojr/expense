@@ -1,12 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 import { GetUser } from 'src/authentication/decorators/get-user.decorator';
 import { Category } from './entities/category.entity';
-// import { GetUser } from '../auth/get-user.decorator';
 
 @Controller('api/categories')
 @UseGuards(JwtAuthGuard)
@@ -14,6 +12,7 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
+  @UsePipes(new ValidationPipe())
   async create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user: User) {
     return this.categoriesService.create(createCategoryDto, user.id);
   }

@@ -7,11 +7,8 @@ export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true, nullable: false })
   name: string;
-
-  // @ManyToOne(() => User)
-  // user: User;
 
   @ManyToOne(() => User, user => user.categories)
   user: User;

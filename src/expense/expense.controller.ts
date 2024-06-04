@@ -10,7 +10,7 @@ export class ExpenseController {
   constructor(private readonly expenseService: ExpenseService) {}
 
   @Post()
-  async create(@Body() createExpenseDto: CreateExpenseDto): Promise<Expense> {
+  async create(@Body() createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
     return this.expenseService.create(createExpenseDto);
   }
 

@@ -8,20 +8,17 @@ export class User {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ nullable: false})
-    fullName: string;
+    @Column({ unique: true, nullable: false})
+    full_name: string;
 
-    @Column({ unique: true, nullable: true})
+    @Column({ nullable: false })
     email: string;
 
-    @Column()
+    @Column({ unique: true, nullable: false })
     mobile: string;
 
-    @Column()
+    @Column({ nullable: false })
     password: string;
-
-    // @OneToMany(() => Category, category => category.user)
-    // categories: Category[];
 
     @OneToMany(() => Category, category => category.user)
     categories: Category[];

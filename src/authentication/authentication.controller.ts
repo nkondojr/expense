@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, UseGuards, UnauthorizedException, ValidationPipe, UsePipes } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -20,6 +20,7 @@ export class AuthenticationController {
   ) {}
 
   @Post('register')
+  @UsePipes(new ValidationPipe())
   async signUp(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }

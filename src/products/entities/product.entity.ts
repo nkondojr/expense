@@ -8,16 +8,16 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true, nullable: false })
   name: string;
 
-  @Column()
-  price: string;
+  @Column({ type: 'decimal', nullable: false })
+  price: number;
 
-  @Column()
+  @Column({ type: 'text', nullable: false })
   description: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
   image: string;
 
   @Column({ nullable: false })

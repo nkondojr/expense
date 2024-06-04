@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 
@@ -14,7 +14,7 @@ export class UsersController {
     @Query('pageSize') pageSize: number = 10,
   ): Promise<any> {
     return this.usersService.findAll(search, page, pageSize);
-  }  
+  }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {

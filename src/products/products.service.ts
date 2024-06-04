@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { saveImage } from 'utils/image.utils';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class ProductsService {
@@ -13,7 +14,7 @@ export class ProductsService {
   ) {}
 
 // ***********************************************************************************************************************************************
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto): Promise<{ message: string }> {
     const { name, price, description, image, categoryId } = createProductDto;
     const imageUrl = saveImage(image);
 
@@ -24,8 +25,21 @@ export class ProductsService {
     product.image = imageUrl;
     product.categoryId = categoryId;
 
-    return await this.productRepository.save(product);
-  }
+    try {
+      await this.productRepository.save(product);
+      return {
+        message: 'Product created successfully',
+      };
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Product already exists');
+      } else if (!categoryId) {
+        throw new NotFoundException(`Category with id ${categoryId} not found`);
+      } else {
+        throw error;
+      }
+    }
+}
 
 // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
@@ -71,24 +85,29 @@ export class ProductsService {
   }
 
 // ***********************************************************************************************************************************************
-  async findOne(id: string): Promise<any> {
-    const product = await this.productRepository.findOne({
-      where: { id },
-      relations: ['category'],
-    });
-
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
-    // Transform the product object
-    const result = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      category_name: product.category.name,
-    };
-
-    return result;
+async findOne(id: string): Promise<any> {
+  // Validate the ID format
+  if (!isUUID(id)) {
+    throw new BadRequestException('Invalid ID format');
   }
+
+  const product = await this.productRepository.findOne({
+    where: { id },
+    relations: ['category'],
+  });
+
+  if (!product) {
+    throw new NotFoundException(`Product with ID ${id} not found`);
+  }
+
+  // Transform the product object
+  const result = {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    category_name: product.category.name,
+  };
+
+  return result;
+}
 }
