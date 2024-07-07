@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
@@ -20,36 +20,49 @@ export class ExpenseService {
   async create(createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
     const { date, amount, description, attachment, expenseItems } = createExpenseDto;
     const imageUrl = saveImage(attachment);
-
+  
     const expense = this.expenseRepository.create({
       date,
       amount,
       description,
       attachment: imageUrl, // Use the imageUrl instead of attachment
     });
-
-    const savedExpense = await this.expenseRepository.save(expense);
-
-    const expenseItemsEntities = expenseItems.map(item => {
-      const expenseItem = new ExpenseItem();
-      expenseItem.quantity = item.quantity;
-      expenseItem.price = item.price;
-      expenseItem.expense = savedExpense;
-      expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
-
-      return expenseItem;
-    });
-
-    await this.expenseItemsRepository.save(expenseItemsEntities);
-
-    return {
-      message: 'Expense created successfully',
-    };
+  
+    try {
+      // Save the expense
+      const savedExpense = await this.expenseRepository.save(expense);
+  
+      // Create expense items
+      const expenseItemsEntities = expenseItems.map(item => {
+        const expenseItem = new ExpenseItem();
+        expenseItem.quantity = item.quantity;
+        expenseItem.price = item.price;
+        expenseItem.expense = savedExpense;
+        expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
+  
+        return expenseItem;
+      });
+  
+      // Save expense items
+      await this.expenseItemsRepository.save(expenseItemsEntities);
+  
+      return {
+        message: 'Expense created successfully',
+      };
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Expense already exists');
+      } else if (error.message.includes('productId')) {
+        throw new NotFoundException('Product not found');
+      } else if (!expenseItems || expenseItems.length === 0) {
+        throw new BadRequestException('Expense items cannot be empty');
+      } else {
+        throw error;
+      }
+    }
   }
-
- 
+  
 // ***********************************************************************************************************************************************
-
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     const query = this.expenseRepository.createQueryBuilder('expense')
       .select([

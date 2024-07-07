@@ -1,9 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -14,12 +15,12 @@ export class UsersService {
 
   // ***********************************************************************************************************************************************
   async create(createUserDto: CreateUserDto): Promise<{ message: string }> {
-    const { full_name, email, mobile, password } = createUserDto;
+    const { fullname, email, mobile, password } = createUserDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = new User();
-    user.full_name = full_name;
+    user.fullname = fullname;
     user.email = email;
     user.mobile = mobile;
     user.password = hashedPassword;
@@ -53,10 +54,10 @@ export class UsersService {
   // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     const query = this.userRepository.createQueryBuilder('user')
-      .select(['user.id', 'user.fullName', 'user.email', 'user.mobile']);
+      .select(['user.id', 'user.fullname', 'user.email', 'user.mobile']);
 
     if (searchTerm) {
-      query.where('user.fullName LIKE :searchTerm OR user.email LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where('user.fullname LIKE :searchTerm OR user.email LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -78,10 +79,16 @@ export class UsersService {
 
   // ***********************************************************************************************************************************************
   async findOne(id: string): Promise<Partial<User> | undefined> {
+    // Validate the ID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

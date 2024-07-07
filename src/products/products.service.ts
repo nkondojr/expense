@@ -39,7 +39,7 @@ export class ProductsService {
         throw error;
       }
     }
-}
+  }
 
 // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {

@@ -4,7 +4,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { Expense } from './entities/expense.entity';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 
-@Controller('api/expenses')
+@Controller('api/expense')
 @UseGuards(JwtAuthGuard)
 export class ExpenseController {
   constructor(private readonly expenseService: ExpenseService) {}
