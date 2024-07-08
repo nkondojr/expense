@@ -11,4 +11,3 @@ export const saveImage = (base64Image: string): string => {
   
   return `http://localhost:5000/uploads/${fileName}`;
 };
-
