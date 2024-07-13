@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Res } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { Expense } from './entities/expense.entity';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
+import * as express from 'express';
+
 
 @Controller('api/expense')
 @UseGuards(JwtAuthGuard)
@@ -31,5 +33,18 @@ export class ExpenseController {
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.expenseService.remove(id);
+  }
+
+
+  @Get('report/pdf')
+  async getPdfReport(@Res() res: express.Response) {
+    const filePath = await this.expenseService.generatePdfReport();
+    res.download(filePath);
+  }
+
+  @Get('report/excel')
+  async getCsvReport(@Res() res: express.Response) {
+    const filePath = await this.expenseService.generateCsvReport();
+    res.download(filePath);
   }
 }

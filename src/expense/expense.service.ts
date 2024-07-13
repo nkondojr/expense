@@ -7,6 +7,12 @@ import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
 import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Product } from 'src/products/entities/product.entity';
+import { join } from 'path';
+import { createWriteStream, existsSync, mkdirSync, writeFileSync } from 'fs';
+import * as PDFDocument from 'pdfkit';
+import { Parser } from 'json2csv';
+
+
 
 @Injectable()
 export class ExpenseService {
@@ -161,6 +167,79 @@ export class ExpenseService {
   // ***********************************************************************************************************************************************
   async remove(id: string): Promise<void> {
     await this.expenseRepository.delete(id);
+  }
+
+  // ***********************************************************************************************************************************************
+  private ensureReportsDirectoryExists() {
+    const reportsDir = join(__dirname, '..', '..', 'reports');
+    if (!existsSync(reportsDir)) {
+      mkdirSync(reportsDir);
+    }
+  }
+
+  async generatePdfReport(): Promise<string> {
+    this.ensureReportsDirectoryExists();
+
+    const expenses = await this.expenseRepository.find({
+      relations: ['expenseItems', 'expenseItems.product'],
+    });
+
+    const doc = new PDFDocument();
+    const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
+    doc.pipe(createWriteStream(filePath));
+
+    doc.fontSize(18).text('Expense Report', { align: 'center' });
+
+    expenses.forEach(expense => {
+      doc
+        .fontSize(12)
+        .text(`Date: ${expense.date}`)
+        .text(`Amount: ${expense.amount}`)
+        .text(`Description: ${expense.description}`)
+        .moveDown();
+
+      expense.expenseItems.forEach(item => {
+        doc
+          .fontSize(10)
+          .text(`  Product: ${item.product.name}`)
+          .text(`  Quantity: ${item.quantity}`)
+          .text(`  Price: ${item.price}`)
+          .moveDown();
+      });
+
+      doc.moveDown().moveDown();
+    });
+
+    doc.end();
+
+    return filePath;
+  }
+
+  // ***********************************************************************************************************************************************
+  async generateCsvReport(): Promise<string> {
+    this.ensureReportsDirectoryExists();
+
+    const expenses = await this.expenseRepository.find({
+      relations: ['expenseItems', 'expenseItems.product'],
+    });
+
+    const expensesData = expenses.map(expense => ({
+      date: expense.date,
+      amount: expense.amount,
+      description: expense.description,
+      expenseItems: expense.expenseItems.map(item => ({
+        product: item.product.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    }));
+
+    const parser = new Parser();
+    const csv = parser.parse(expensesData);
+    const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.csv');
+    writeFileSync(filePath, csv);
+
+    return filePath;
   }
 
 }
