@@ -3,7 +3,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
-// import { Category } from '@/categories/entities/category.entity.ts'; // Adjust this path as needed
 import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Category } from 'src/categories/entities/category.entity';

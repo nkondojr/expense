@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
@@ -29,8 +29,11 @@ export class ExpenseController {
   }
 
   @Get('report/pdf')
-  async getPdfReport(@Res() res: express.Response) {
-    const filePath = await this.expenseService.generatePdfReport();
+  async getPdfReport(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Res() res: express.Response) {
+    const filePath = await this.expenseService.generatePdfReport(startDate, endDate);
     res.download(filePath);
   }
 
@@ -39,4 +42,21 @@ export class ExpenseController {
     const filePath = await this.expenseService.generateCsvReport();
     res.download(filePath);
   }
+
+  // @Get('export')
+  // async exportExpenses(@Res() res: Response): Promise<void> {
+  //   try {
+  //     const buffer = await this.expenseService.generateExcelFile();
+
+  //     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  //     res.setHeader('Content-Disposition', 'attachment; filename=expenses.xlsx');
+  //     res.setHeader('Content-Length', buffer.length.toString()); // Convert to string
+
+  //     res.send(buffer);
+  //   } catch (error) {
+  //     // Handle errors
+  //     console.error('Error exporting expenses:', error);
+  //     throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
 }
