@@ -165,11 +165,6 @@ export class ExpenseService {
   }
 
   // ***********************************************************************************************************************************************
-  async remove(id: string): Promise<void> {
-    await this.expenseRepository.delete(id);
-  }
-
-  // ***********************************************************************************************************************************************
   private ensureReportsDirectoryExists() {
     const reportsDir = join(__dirname, '..', '..', 'reports');
     if (!existsSync(reportsDir)) {
@@ -179,40 +174,90 @@ export class ExpenseService {
 
   async generatePdfReport(): Promise<string> {
     this.ensureReportsDirectoryExists();
-
+  
     const expenses = await this.expenseRepository.find({
       relations: ['expenseItems', 'expenseItems.product'],
     });
-
+  
     const doc = new PDFDocument();
     const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
-    doc.pipe(createWriteStream(filePath));
-
-    doc.fontSize(18).text('Expense Report', { align: 'center' });
-
+    doc.pipe(createWriteStream(filePath));  
+  
+    doc.fontSize(18).fillColor('black').text('Expense Report', { align: 'center', bold: true }).moveDown();
+  
+    let y = 100; // Initial y position for the table
+  
+    // Draw table headers only once
+    drawTableHeader();
+  
     expenses.forEach(expense => {
+      drawExpenseDetails(expense);
+      expense.expenseItems.forEach(item => {
+        drawExpenseItem(item);
+      });
+  
+      y += 20; // Adjust y position for spacing between expenses
+    });
+  
+    doc.end();
+  
+    return filePath;
+  
+    // Function to draw table header
+    function drawTableHeader() {
+      doc.moveTo(50, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
+      y += 20; // Move down after headers
+
       doc
         .fontSize(12)
-        .text(`Date: ${expense.date}`)
-        .text(`Amount: ${expense.amount}`)
-        .text(`Description: ${expense.description}`)
-        .moveDown();
+        .fillColor('black')
+        .text('Date / Product', 50, y, { bold: true })
+        .text('Amount (TSH)', 400, y, { align: 'right', bold: true  }) // Align amount to the right
+        .text('Description / Quantity', 200, y, { bold: true }); // Adjust position for description
+  
+      doc.moveTo(50, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
+      y += 40; // Move down after headers
+    }
+  
+    // Function to draw expense details
+    function drawExpenseDetails(expense) {
+      doc
+        .fontSize(10)
+        .text(expense.date.toString(), 50, y)
+        .text("Total:" + " " + formatAmount(expense.amount), 400, y, { align: 'right', bold: true  }) // Align amount to the right
+        .text(expense.description, 200, y); // Adjust position for description
+  
+      doc.moveTo(50, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under details
+      y += 20; // Move down after details
+    }
+  
+    // Function to draw expense item
+    function drawExpenseItem(item) {
+      doc
+        .fontSize(10)
+        .text("      " + item.product.name, 50, y)
+        .text(item.quantity.toString(), 200, y)
+        .text(formatAmount(item.price), 400, y, { align: 'right' }); // Align price to the right
+  
+      doc.moveTo(50, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under each item
+      y += 20; // Move down after each item
+    }
 
-      expense.expenseItems.forEach(item => {
-        doc
-          .fontSize(10)
-          .text(`  Product: ${item.product.name}`)
-          .text(`  Quantity: ${item.quantity}`)
-          .text(`  Price: ${item.price}`)
-          .moveDown();
-      });
+    // Function to format amount with custom separators
+    function formatAmount(amount) {
+      // Convert amount to a number if it's not already
+      const parsedAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
-      doc.moveDown().moveDown();
-    });
+      // Check if parsedAmount is a valid number
+      if (isNaN(parsedAmount)) {
+        return ''; // Or handle accordingly if amount is not a valid number
+      }
 
-    doc.end();
-
-    return filePath;
+      // Format the number with custom separators
+      const parts = parsedAmount.toFixed(2).split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Insert dots as thousands separators
+      return parts.join('.'); // Join with comma separator for decimal
+    }
   }
 
   // ***********************************************************************************************************************************************
