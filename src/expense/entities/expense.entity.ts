@@ -1,5 +1,6 @@
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Expense {
@@ -20,6 +21,9 @@ export class Expense {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @ManyToOne(() => User, user => user.expenses)
+  createdBy: User;
 
   @OneToMany(() => ExpenseItem, expenseItems => expenseItems.expense)
   expenseItems: ExpenseItem[];

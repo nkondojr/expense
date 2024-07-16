@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, ILike, Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { Expense } from './entities/expense.entity';
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
@@ -12,6 +12,7 @@ import { createWriteStream, existsSync, mkdirSync, writeFileSync } from 'fs';
 import * as PDFDocument from 'pdfkit';
 import { Parser } from 'json2csv';
 import * as ExcelJS from 'exceljs';
+import { Buffer } from 'buffer';
 
 
 @Injectable()
@@ -137,7 +138,7 @@ export class ExpenseService {
 
     const expense = await this.expenseRepository.findOne({
       where: { id },
-      relations: ['expenseItems', 'expenseItems.product'],
+      relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
     });
 
     if (!expense) {
@@ -158,6 +159,7 @@ export class ExpenseService {
         price: item.price,
         productId: item.product.id,
         productName: item.product.name,
+        categoryName: item.product.category.name,
       })),
     };
 
@@ -174,7 +176,6 @@ export class ExpenseService {
 
   async generatePdfReport(startDate: string, endDate: string): Promise<string> {
     this.ensureReportsDirectoryExists();
-
     try {
       // Parse start and end dates into Date objects
       const startDateObj = new Date(startDate);
@@ -182,9 +183,9 @@ export class ExpenseService {
 
       const expenses = await this.expenseRepository.find({
         where: {
-          date: Between(startDateObj, endDateObj)
+          date: Between(startDateObj, endDateObj),
         },
-        relations: ['expenseItems', 'expenseItems.product'],
+        relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
       });
 
       const doc = new PDFDocument();
@@ -211,17 +212,26 @@ export class ExpenseService {
       drawTableHeader();
 
       if (expenses.length === 0) {
+        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
+        y += 0; // Move down after headers
         // If no expenses found, display "No data found"
-        doc.fontSize(12).fillColor('black').text('No data found', { align: 'left' }).moveDown();
+        doc.fontSize(12).fillColor('black').text('No data found');
+
       } else {
+        let totalAmount = 0;
+
         expenses.forEach(expense => {
           drawExpenseDetails(expense);
+          totalAmount += typeof expense.amount === 'string' ? parseFloat(expense.amount) : expense.amount; // Ensure expense.amount is added as a number
           expense.expenseItems.forEach(item => {
             drawExpenseItem(item);
           });
 
           y += 20; // Adjust y position for spacing between expenses
         });
+
+        // Draw total amount at the end
+        drawTotalAmount(totalAmount);
       }
 
       doc.end();
@@ -234,15 +244,16 @@ export class ExpenseService {
         y += 17; // Move down after headers
 
         // Draw a gray rectangle as the background for the header
-        doc.rect(70, y, 550 - 70, 25).fill('#e0e0e0');
-        y += 11.5; // Move down after headers
+        doc.rect(70, y, 550 - 70, 20).fill('#e0e0e0');
+        y += 7; // Move down after headers
 
         doc
           .fontSize(12)
           .fillColor('#000000')
           .text('Date / Product', 70, y, { bold: true })
-          .text('Amount (TSH)', 400, y, { align: 'right', bold: true })
-          .text('Quantity', 250, y, { bold: true });
+          .text('Category', 250, y, { bold: true })
+          .text('Quantity', 350, y, { bold: true })
+          .text('Amount (TSH)', 450, y, { align: 'right', bold: true });
 
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
         y += 30; // Move down after headers
@@ -253,7 +264,7 @@ export class ExpenseService {
         doc
           .fontSize(10)
           .text(formatDate(expense.date), 70, y)
-          .text("Total:" + " " + formatAmount(expense.amount), 400, y, { align: 'right', bold: true });
+          .text("Total:" + " " + formatAmount(expense.amount), 450, y, { align: 'right', bold: true });
 
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under details
         y += 20; // Move down after details
@@ -264,12 +275,29 @@ export class ExpenseService {
         doc
           .fontSize(10)
           .text("      " + item.product.name, 70, y)
-          .text(item.quantity.toString(), 250, y)
-          .text(formatAmount(item.price), 400, y, { align: 'right' });
+          .text(item.product.category.name, 250, y)
+          .text(item.quantity.toString(), 350, y)
+          .text(formatAmount(item.price), 450, y, { align: 'right' });
 
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under each item
         y += 20; // Move down after each item
       }
+
+      // // Function to draw total amount at the end
+      function drawTotalAmount(totalAmount: number) {
+        doc.moveDown(2); // Move down for spacing before total
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(12)
+          .text('Total Expense Amount:', 70, y, { bold: true });
+
+        // Set font style and align right
+        doc.font('Helvetica-Bold').fontSize(12).text(formatAmount(totalAmount), 450, y, { align: 'right' });
+
+        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under total
+        y += 20; // Move down after total
+      }
+
 
       // Function to format amount with custom separators
       function formatAmount(amount) {
@@ -283,8 +311,8 @@ export class ExpenseService {
 
         // Format the number with custom separators
         const parts = parsedAmount.toFixed(2).split('.');
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Insert dots as thousands separators
-        return parts.join('.'); // Join with comma separator for decimal
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Insert commas as thousands separators
+        return parts.join('.'); // Join with dot separator for decimal
       }
 
       // Function to format date into dd-mm-yyyy
@@ -295,7 +323,6 @@ export class ExpenseService {
         const year = d.getFullYear();
         return `${day}-${month}-${year}`;
       }
-      return filePath; // Assuming filePath is correctly returned
     } catch (error) {
       // Handle specific error and throw HttpException with appropriate status and message
       throw new HttpException('Invalid date format for startDate or endDate', HttpStatus.BAD_REQUEST);
@@ -303,62 +330,44 @@ export class ExpenseService {
   }
 
   // ***********************************************************************************************************************************************
-  async generateCsvReport(): Promise<string> {
-    this.ensureReportsDirectoryExists();
+  async generateExcel(): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('EXPENSES');
 
-    const expenses = await this.expenseRepository.find({
-      relations: ['expenseItems', 'expenseItems.product'],
+    // Define headers
+    const headerRow = worksheet.addRow(['DATE', 'AMOUNT']);
+
+    // Apply style to header
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; // White font color
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF808080' }, // Gray background color
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
 
-    const expensesData = expenses.map(expense => ({
-      date: expense.date,
-      amount: expense.amount,
-      description: expense.description,
-      expenseItems: expense.expenseItems.map(item => ({
-        product: item.product.name,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    }));
+    // Fetch all expenses
+    const expenses = await this.expenseRepository.find();
 
-    const parser = new Parser();
-    const csv = parser.parse(expensesData);
-    const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.csv');
-    writeFileSync(filePath, csv);
+    // Populate rows with required columns
+    expenses.forEach(expense => {
+      // Convert expense.date to a Date object if it's not already
+      const date = new Date(expense.date);
+      const formattedDate = !isNaN(date.getTime()) ? date.toISOString() : 'Invalid Date';
 
-    return filePath;
+      worksheet.addRow([
+        formattedDate,
+        expense.amount
+      ]);
+    });
+
+    // Generate Excel file
+    const buffer: Buffer = await workbook.xlsx.writeBuffer() as Buffer;
+
+    return buffer;
   }
 
-
-  // //----------------------------------------------------------------------------------------------------------
-  // async generateExcelFile(): Promise<Buffer> {
-  //   const workbook = new ExcelJS.Workbook();
-  //   const worksheet = workbook.addWorksheet('Expenses');
-
-  //   worksheet.columns = [
-  //     { header: 'ID', key: 'id', width: 10 },
-  //     { header: 'Date', key: 'date', width: 20 },
-  //     { header: 'Amount', key: 'amount', width: 15 },
-  //     { header: 'Description', key: 'description', width: 30 },
-  //     { header: 'Attachment', key: 'attachment', width: 30 },
-  //     { header: 'Created At', key: 'createdAt', width: 20 },
-  //   ];
-
-  //   const expenses = await this.expenseRepository.find();
-
-  //   expenses.forEach(expense => {
-  //     worksheet.addRow({
-  //       id: expense.id,
-  //       date: expense.date,
-  //       amount: expense.amount,
-  //       description: expense.description,
-  //       attachment: expense.attachment,
-  //       createdAt: expense.createdAt,
-  //     });
-  //   });
-
-  //   const buffer = await workbook.xlsx.writeBuffer();
-  //   return buffer as Buffer;
-  // }  
 
 }
