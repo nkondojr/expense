@@ -19,7 +19,7 @@ export class ProductsService {
 
   // ***********************************************************************************************************************************************
   async create(createProductDto: CreateProductDto): Promise<{ message: string }> {
-    const { name, price, description, image, categoryId } = createProductDto;
+    const { name, unit, description, image, categoryId } = createProductDto;
 
     // Validate that category exists
     const categoryExists = await this.categoryRepository.findOne({ where: { id: categoryId } });
@@ -31,7 +31,7 @@ export class ProductsService {
 
     const product = new Product();
     product.name = name;
-    product.price = price;
+    product.unit = unit;
     product.description = description;
     product.image = imageUrl;
     product.categoryId = categoryId;
@@ -57,7 +57,7 @@ export class ProductsService {
       .select([
         'product.id',
         'product.name',
-        'product.price',
+        'product.unit',
         'product.description',
         'product.image',
         'product.categoryId',
@@ -113,7 +113,7 @@ export class ProductsService {
     const result = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      unit: product.unit,
       category_name: product.category.name,
     };
 

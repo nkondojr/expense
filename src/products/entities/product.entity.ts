@@ -11,8 +11,8 @@ export class Product {
   @Column({ unique: true, nullable: false })
   name: string;
 
-  @Column({ type: 'decimal', nullable: false })
-  price: number;
+  @Column({ type: 'text', nullable: true })
+  unit: string;
 
   @Column({ type: 'text', nullable: false })
   description: string;

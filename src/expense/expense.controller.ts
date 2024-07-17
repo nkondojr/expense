@@ -28,12 +28,13 @@ export class ExpenseController {
     return this.expenseService.findOne(id);
   }
 
-  @Get('report/pdf')
+  @Post('report/pdf')
   async getPdfReport(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-    @Res() res: express.Response) {
-    const filePath = await this.expenseService.generatePdfReport(startDate, endDate);
+    @Body() payload: { startDate: string; endDate: string; categoryId: string },
+    @Res() res: express.Response
+  ) {
+    const { startDate, endDate, categoryId } = payload;
+    const filePath = await this.expenseService.generatePdfReport(startDate, endDate, categoryId);
     res.download(filePath);
   }
 
@@ -42,7 +43,7 @@ export class ExpenseController {
     const buffer = await this.expenseService.generateExcel();
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=expenses.xlsx');
+    res.setHeader('Content-Disposition', 'attachment; filename=expense-report.xlsx');
     res.send(buffer);
   }
 }

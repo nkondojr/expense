@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, ILike, Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { Expense } from './entities/expense.entity';
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
@@ -8,9 +8,8 @@ import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Product } from 'src/products/entities/product.entity';
 import { join } from 'path';
-import { createWriteStream, existsSync, mkdirSync, writeFileSync } from 'fs';
+import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import * as PDFDocument from 'pdfkit';
-import { Parser } from 'json2csv';
 import * as ExcelJS from 'exceljs';
 import { Buffer } from 'buffer';
 
@@ -159,6 +158,7 @@ export class ExpenseService {
         price: item.price,
         productId: item.product.id,
         productName: item.product.name,
+        productUnit: item.product.unit,
         categoryName: item.product.category.name,
       })),
     };
@@ -166,7 +166,7 @@ export class ExpenseService {
     return result;
   }
 
-  // ***********************************************************************************************************************************************
+  // ***********************************************************************************************************************************************  
   private ensureReportsDirectoryExists() {
     const reportsDir = join(__dirname, '..', '..', 'reports');
     if (!existsSync(reportsDir)) {
@@ -174,17 +174,29 @@ export class ExpenseService {
     }
   }
 
-  async generatePdfReport(startDate: string, endDate: string): Promise<string> {
+  async generatePdfReport(startDate: string, endDate: string, categoryId: string): Promise<string> {
     this.ensureReportsDirectoryExists();
     try {
       // Parse start and end dates into Date objects
       const startDateObj = new Date(startDate);
       const endDateObj = new Date(endDate);
 
+      // Build the query conditionally based on the presence of categoryId
+      const query: any = {
+        date: Between(startDateObj, endDateObj),
+      };
+      if (categoryId) {
+        query.expenseItems = {
+          product: {
+            category: {
+              id: categoryId,
+            },
+          },
+        };
+      }
+
       const expenses = await this.expenseRepository.find({
-        where: {
-          date: Between(startDateObj, endDateObj),
-        },
+        where: query,
         relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
       });
 
@@ -192,16 +204,17 @@ export class ExpenseService {
       const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
       doc.pipe(createWriteStream(filePath));
 
-      doc.fontSize(18).fillColor('black').text('Expense Report', { align: 'left', bold: true }).moveDown();
+      doc.font('Helvetica-Bold').fontSize(18).fillColor('black').text('QELA TECH (T) LTD', { align: 'left', bold: true });
+      doc.fontSize(16).fillColor('black').text('General Expense Report', { align: 'left', bold: true }).moveDown();
 
-      let y = 100; // Initial y position for the table
+      let y = 120; // Initial y position for the table
 
       // Format dates for display
       const formattedStartDate = formatDate(startDateObj);
       const formattedEndDate = formatDate(endDateObj);
 
       // Write date range to the PDF document
-      doc.fontSize(12).text(`Range: ${formattedStartDate} to ${formattedEndDate}`, {
+      doc.fontSize(12).text(`From ${formattedStartDate} to ${formattedEndDate}`, {
         align: 'left',
         width: 500,
         continued: false,
@@ -221,13 +234,20 @@ export class ExpenseService {
         let totalAmount = 0;
 
         expenses.forEach(expense => {
+          // Calculate expense.amount from expenseItems
+          const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+          totalAmount += calculatedAmount;
+
           drawExpenseDetails(expense);
-          totalAmount += typeof expense.amount === 'string' ? parseFloat(expense.amount) : expense.amount; // Ensure expense.amount is added as a number
-          expense.expenseItems.forEach(item => {
-            drawExpenseItem(item);
+
+          expense.expenseItems.forEach((item, index) => {
+            drawExpenseItem(item, index + 1); // Pass index + 1 to start from 1 instead of 0
           });
 
+          drawSubTotal(calculatedAmount);
+
           y += 20; // Adjust y position for spacing between expenses
+
         });
 
         // Draw total amount at the end
@@ -250,9 +270,11 @@ export class ExpenseService {
         doc
           .fontSize(12)
           .fillColor('#000000')
-          .text('Date / Product', 70, y, { bold: true })
-          .text('Category', 250, y, { bold: true })
-          .text('Quantity', 350, y, { bold: true })
+          .text('Date / Category', 72, y, { bold: true })
+          .text('Product', 200, y, { bold: true })
+          .text('Qty', 280, y, { bold: true })
+          .text('Unit', 310, y, { bold: true })
+          .text('Price (TSH)', 370, y, { bold: true })
           .text('Amount (TSH)', 450, y, { align: 'right', bold: true });
 
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
@@ -264,32 +286,47 @@ export class ExpenseService {
         doc
           .fontSize(10)
           .text(formatDate(expense.date), 70, y)
-          .text("Total:" + " " + formatAmount(expense.amount), 450, y, { align: 'right', bold: true });
 
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under details
         y += 20; // Move down after details
       }
 
       // Function to draw expense item
-      function drawExpenseItem(item) {
+      function drawExpenseItem(item, index) {
         doc
           .fontSize(10)
-          .text("      " + item.product.name, 70, y)
-          .text(item.product.category.name, 250, y)
-          .text(item.quantity.toString(), 350, y)
-          .text(formatAmount(item.price), 450, y, { align: 'right' });
+          .text(index.toString() + ".", 70, y)
+          .text(item.product.category.name, 80, y)
+          .text(item.product.name, 200, y)
+          .text(item.quantity.toString(), 280, y)
+          .text(item.product.unit, 310, y)
+          .text(formatAmount(item.price), 370, y)
+          .text(formatAmount(item.quantity * item.price), 450, y, { align: 'right' });
 
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under each item
         y += 20; // Move down after each item
       }
 
-      // // Function to draw total amount at the end
+      // Function to draw expense details
+      function drawSubTotal(calculatedAmount) {
+        doc
+          .fontSize(10)
+          .text('Sub Total:', 70, y, { bold: true });
+        doc
+          .fontSize(10)
+          .text(formatAmount(calculatedAmount), 450, y, { align: 'right', bold: true });
+
+        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under details
+        y += 20; // Move down after details
+      }
+
+      // Function to draw total amount at the end
       function drawTotalAmount(totalAmount: number) {
         doc.moveDown(2); // Move down for spacing before total
         doc
           .font('Helvetica-Bold')
           .fontSize(12)
-          .text('Total Expense Amount:', 70, y, { bold: true });
+          .text('Grand Total Amount:', 70, y, { bold: true });
 
         // Set font style and align right
         doc.font('Helvetica-Bold').fontSize(12).text(formatAmount(totalAmount), 450, y, { align: 'right' });
@@ -297,7 +334,6 @@ export class ExpenseService {
         doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under total
         y += 20; // Move down after total
       }
-
 
       // Function to format amount with custom separators
       function formatAmount(amount) {
@@ -325,7 +361,7 @@ export class ExpenseService {
       }
     } catch (error) {
       // Handle specific error and throw HttpException with appropriate status and message
-      throw new HttpException('Invalid date format for startDate or endDate', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Invalid date range or category', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -335,7 +371,7 @@ export class ExpenseService {
     const worksheet = workbook.addWorksheet('EXPENSES');
 
     // Define headers
-    const headerRow = worksheet.addRow(['DATE', 'AMOUNT']);
+    const headerRow = worksheet.addRow(['DATE', 'PRODUCT', 'QUANTITY', 'PRICE', 'AMOUNT']);
 
     // Apply style to header
     headerRow.eachCell((cell) => {
@@ -348,26 +384,58 @@ export class ExpenseService {
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
 
-    // Fetch all expenses
-    const expenses = await this.expenseRepository.find();
+    // Fetch all expenses with their related data
+    const expenses = await this.expenseRepository.find({
+      relations: ['expenseItems', 'expenseItems.product'],
+    });
+
+    let lastDate = '';
 
     // Populate rows with required columns
     expenses.forEach(expense => {
       // Convert expense.date to a Date object if it's not already
       const date = new Date(expense.date);
-      const formattedDate = !isNaN(date.getTime()) ? date.toISOString() : 'Invalid Date';
+      const formattedDate = !isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : 'Invalid Date';
 
-      worksheet.addRow([
-        formattedDate,
-        expense.amount
-      ]);
+      if (formattedDate !== lastDate) {
+        if (lastDate) {
+          worksheet.addRow([]); // Add an empty row before starting a new date's data
+        }
+        lastDate = formattedDate;
+        const dateRow = worksheet.addRow([formattedDate, '', '', '', '']);
+        dateRow.eachCell((cell) => {
+          cell.font = { bold: true };
+        });
+      }
+
+      expense.expenseItems.forEach(item => {
+        const row = worksheet.addRow([
+          '',
+          item.product.name,
+          item.quantity,
+          item.price,
+          item.quantity * item.price // Amount
+        ]);
+
+        // Align price and amount to the right and format with comma separator
+        row.getCell(4).alignment = { horizontal: 'right' };
+        row.getCell(4).numFmt = '#,##0.00'; // Number format with comma separator and two decimal places
+        row.getCell(5).alignment = { horizontal: 'right' };
+        row.getCell(5).numFmt = '#,##0.00'; // Number format with comma separator and two decimal places
+      });
     });
+
+    // Set column width for better visibility
+    worksheet.getColumn(1).width = 15;
+    worksheet.getColumn(2).width = 25;
+    worksheet.getColumn(3).width = 15;
+    worksheet.getColumn(4).width = 15;
+    worksheet.getColumn(5).width = 20;
 
     // Generate Excel file
     const buffer: Buffer = await workbook.xlsx.writeBuffer() as Buffer;
 
     return buffer;
   }
-
 
 }

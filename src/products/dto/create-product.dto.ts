@@ -5,9 +5,8 @@ export class CreateProductDto {
     @IsNotEmpty()
     name: string;
 
-    @IsDecimal()
-    @IsNotEmpty()
-    price: number;
+    @IsString()
+    unit: string;
 
     @IsString()
     @IsNotEmpty()
