@@ -15,6 +15,8 @@ import { ExpenseModule } from './expense/expense.module';
 import { Expense } from './expense/entities/expense.entity';
 import { ExpenseItemsModule } from './expense_items/expense_items.module';
 import { ExpenseItem } from './expense_items/entities/expense_item.entity';
+import { ReportsModule } from './reports/reports.module';
+import { Report } from './reports/entities/report.entity';
 
 @Module({
   imports: [
@@ -30,7 +32,7 @@ import { ExpenseItem } from './expense_items/entities/expense_item.entity';
         username: ConfigService.get('DB_USERNAME'),
         password: ConfigService.get('DB_PASSWORD'),
         database: ConfigService.get('DB_NAME'),
-        entities: [User, Category, Product, Expense, ExpenseItem],
+        entities: [User, Category, Product, Expense, ExpenseItem, Report],
         // entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         // do NOT use synchronize: true in real projects
         synchronize: true,
@@ -42,7 +44,8 @@ import { ExpenseItem } from './expense_items/entities/expense_item.entity';
     CategoriesModule,
     ProductsModule,
     ExpenseModule,
-    ExpenseItemsModule],
+    ExpenseItemsModule,
+    ReportsModule],
   controllers: [AppController],
   providers: [AppService],
 })

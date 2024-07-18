@@ -28,17 +28,7 @@ export class ExpenseController {
     return this.expenseService.findOne(id);
   }
 
-  @Post('report/pdf')
-  async getPdfReport(
-    @Body() payload: { startDate: string; endDate: string; categoryId: string },
-    @Res() res: express.Response
-  ) {
-    const { startDate, endDate, categoryId } = payload;
-    const filePath = await this.expenseService.generatePdfReport(startDate, endDate, categoryId);
-    res.download(filePath);
-  }
-
-  @Get('generate/excel')
+  @Get('reports/excel')
   async generateExcel(@Res() res: express.Response): Promise<void> {
     const buffer = await this.expenseService.generateExcel();
 
