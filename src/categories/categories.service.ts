@@ -38,7 +38,7 @@ async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<{ me
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     const query = this.categoryRepository.createQueryBuilder('category')
       .leftJoinAndSelect('category.user', 'user')
-      .select(['category.id', 'category.name', 'user.id', 'user.fullname']);
+      .select(['category.id', 'category.name', 'user.id', 'user.full_name']);
 
     if (searchTerm) {
       query.where('category.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
@@ -52,7 +52,7 @@ async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<{ me
     categories.forEach(category => {
       if (category.user) {
         category['createdBy'] = category.user.id;
-        category['username'] = category.user.fullname;
+        category['username'] = category.user.full_name;
         delete category.user;
       }
     });

@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Res, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Res, Put, UseGuards, HttpStatus } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import * as express from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
@@ -10,14 +10,19 @@ export class ReportsController {
 
   @Put('pdf')
   async getPdfReport(
-    @Body() payload: { startDate: string; endDate: string; categoryId: string },
+    @Body() payload: { startDate: string; endDate: string; categoryIds: string[] },
     @Res() res: express.Response
   ) {
-    const { startDate, endDate, categoryId } = payload;
-    const filePath = await this.reportsService.generatePdfReport(startDate, endDate, categoryId);
-    res.download(filePath);
+    const { startDate, endDate, categoryIds } = payload;
+    try {
+      const filePath = await this.reportsService.generatePdfReport(startDate, endDate, categoryIds);
+      res.download(filePath);
+    } catch (error) {
+      // Handle any errors (e.g., logging and sending an error response)
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('An error occurred while generating the report');
+    }
   }
-
+  
   @Get('excel')
   async generateExcel(@Res() res: express.Response): Promise<void> {
     const buffer = await this.reportsService.generateExcel();

@@ -15,12 +15,12 @@ export class UsersService {
 
   // ***********************************************************************************************************************************************
   async create(createUserDto: CreateUserDto): Promise<{ message: string }> {
-    const { fullname, email, mobile, password } = createUserDto;
+    const { full_name, email, mobile, password } = createUserDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = new User();
-    user.fullname = fullname;
+    user.full_name = full_name;
     user.email = email;
     user.mobile = mobile;
     user.password = hashedPassword;
@@ -54,10 +54,10 @@ export class UsersService {
   // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     const query = this.userRepository.createQueryBuilder('user')
-      .select(['user.id', 'user.fullname', 'user.email', 'user.mobile']);
+      .select(['user.id', 'user.full_name', 'user.email', 'user.mobile']);
 
     if (searchTerm) {
-      query.where('user.fullname LIKE :searchTerm OR user.email LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where('user.full_name LIKE :searchTerm OR user.email LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
