@@ -10,7 +10,6 @@ import { Product } from 'src/products/entities/product.entity';
 import * as ExcelJS from 'exceljs';
 import { Buffer } from 'buffer';
 
-
 @Injectable()
 export class ExpenseService {
   constructor(
@@ -162,78 +161,4 @@ export class ExpenseService {
 
     return result;
   }
-
-  // ***********************************************************************************************************************************************
-  async generateExcel(): Promise<Buffer> {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('EXPENSES');
-
-    // Define headers
-    const headerRow = worksheet.addRow(['DATE', 'PRODUCT', 'QUANTITY', 'PRICE', 'AMOUNT']);
-
-    // Apply style to header
-    headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; // White font color
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF808080' }, // Gray background color
-      };
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
-    });
-
-    // Fetch all expenses with their related data
-    const expenses = await this.expenseRepository.find({
-      relations: ['expenseItems', 'expenseItems.product'],
-    });
-
-    let lastDate = '';
-
-    // Populate rows with required columns
-    expenses.forEach(expense => {
-      // Convert expense.date to a Date object if it's not already
-      const date = new Date(expense.date);
-      const formattedDate = !isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : 'Invalid Date';
-
-      if (formattedDate !== lastDate) {
-        if (lastDate) {
-          worksheet.addRow([]); // Add an empty row before starting a new date's data
-        }
-        lastDate = formattedDate;
-        const dateRow = worksheet.addRow([formattedDate, '', '', '', '']);
-        dateRow.eachCell((cell) => {
-          cell.font = { bold: true };
-        });
-      }
-
-      expense.expenseItems.forEach(item => {
-        const row = worksheet.addRow([
-          '',
-          item.product.name,
-          item.quantity,
-          item.price,
-          item.quantity * item.price // Amount
-        ]);
-
-        // Align price and amount to the right and format with comma separator
-        row.getCell(4).alignment = { horizontal: 'right' };
-        row.getCell(4).numFmt = '#,##0.00'; // Number format with comma separator and two decimal places
-        row.getCell(5).alignment = { horizontal: 'right' };
-        row.getCell(5).numFmt = '#,##0.00'; // Number format with comma separator and two decimal places
-      });
-    });
-
-    // Set column width for better visibility
-    worksheet.getColumn(1).width = 15;
-    worksheet.getColumn(2).width = 25;
-    worksheet.getColumn(3).width = 15;
-    worksheet.getColumn(4).width = 15;
-    worksheet.getColumn(5).width = 20;
-
-    // Generate Excel file
-    const buffer: Buffer = await workbook.xlsx.writeBuffer() as Buffer;
-
-    return buffer;
-  }
-
 }

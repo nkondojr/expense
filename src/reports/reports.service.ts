@@ -1,6 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateReportDto } from './dto/create-report.dto';
-import { UpdateReportDto } from './dto/update-report.dto';
 import { Expense } from 'src/expense/entities/expense.entity';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +11,7 @@ import { Buffer } from 'buffer';
 @Injectable()
 export class ReportsService {
   @InjectRepository(Expense)
-    private expenseRepository: Repository<Expense>
+  private expenseRepository: Repository<Expense>
 
   // ***********************************************************************************************************************************************  
   private ensureReportsDirectoryExists() {
@@ -49,14 +47,12 @@ export class ReportsService {
         relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
       });
 
-      const doc = new PDFDocument();
+      const doc = new PDFDocument({ layout: 'landscape', margin: 50 });
       const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
       doc.pipe(createWriteStream(filePath));
 
-      doc.font('Helvetica-Bold').fontSize(18).fillColor('black').text('QELA TECH (T) LTD', { align: 'left', bold: true });
-      doc.fontSize(16).fillColor('black').text('General Expense Report', { align: 'left', bold: true }).moveDown();
-
-      let y = 120; // Initial y position for the table
+      doc.font('Helvetica-Bold').fontSize(18).fillColor('black').text('QELA TECH (T) LTD', { align: 'left' });
+      doc.fontSize(16).fillColor('black').text('General Expense Report', { align: 'left' }).moveDown();
 
       // Format dates for display
       const formattedStartDate = formatDate(startDateObj);
@@ -65,21 +61,17 @@ export class ReportsService {
       // Write date range to the PDF document
       doc.fontSize(12).text(`From ${formattedStartDate} to ${formattedEndDate}`, {
         align: 'left',
-        width: 500,
+        width: 700,
         continued: false,
-      }).moveDown();
-      y += 20; // Adjust y position for spacing between expenses
+      });
 
       // Draw table headers only once
       drawTableHeader();
 
-      // if (expenses.length === 0) {
-      //   doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
-      //   y += 0; // Move down after headers
-      //   // If no expenses found, display "No data found"
-      //   doc.fontSize(12).fillColor('black').text('No data found');
-
-      // } else {
+      if (expenses.length === 0) {
+        doc.fontSize(12).fillColor('black').text('No data found', 50, doc.y + 0);
+        doc.moveTo(50, doc.y + 5).lineTo(750, doc.y + 5).stroke(); // Horizontal line under headers
+      } else {
         let totalAmount = 0;
 
         expenses.forEach(expense => {
@@ -94,14 +86,11 @@ export class ReportsService {
           });
 
           drawSubTotal(calculatedAmount);
-
-          y += 20; // Adjust y position for spacing between expenses
-
         });
 
         // Draw total amount at the end
         drawTotalAmount(totalAmount);
-      // }
+      }
 
       doc.end();
 
@@ -109,79 +98,99 @@ export class ReportsService {
 
       // Function to draw table header
       function drawTableHeader() {
-        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
+        let y = doc.y;
+        doc.moveTo(50, y + 15).lineTo(750, y + 15).stroke(); // Horizontal line under headers
         y += 17; // Move down after headers
 
         // Draw a gray rectangle as the background for the header
-        doc.rect(70, y, 550 - 70, 20).fill('#e0e0e0');
+        doc.rect(50, y, 700, 20).fill('#e0e0e0');
         y += 7; // Move down after headers
 
         doc
           .fontSize(12)
           .fillColor('#000000')
-          .text('Date / Category', 72, y, { bold: true })
-          .text('Product', 200, y, { bold: true })
-          .text('Qty', 280, y, { bold: true })
-          .text('Unit', 310, y, { bold: true })
-          .text('Price (TSH)', 370, y, { bold: true })
-          .text('Amount (TSH)', 450, y, { align: 'right', bold: true });
+          .text('Date / Category', 52, y, { bold: true })
+          .text('Product', 300, y, { bold: true })
+          .text('Qty', 450, y, { bold: true })
+          .text('Unit', 500, y, { bold: true })
+          .text('Price (TSH)', 550, y, { bold: true })
+          .text('Amount (TSH)', 650, y, { align: 'right', bold: true });
 
-        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under headers
-        y += 30; // Move down after headers
+        doc.moveTo(50, y + 15).lineTo(750, y + 15).stroke(); // Horizontal line under headers
+        doc.y += 20; // Move down after headers
       }
 
       // Function to draw expense details
       function drawExpenseDetails(expense) {
+        let y = doc.y;
+        if (y + 20 > doc.page.height - doc.page.margins.bottom) {
+          doc.addPage();
+          drawTableHeader();
+          y = doc.y;
+        }
         doc
           .fontSize(10)
-          .text(formatDate(expense.date), 70, y)
+          .text(formatDate(expense.date), 50, y);
 
-        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under details
-        y += 20; // Move down after details
+        doc.moveTo(50, y + 15).lineTo(750, y + 15).stroke(); // Horizontal line under details
+        doc.y += 10; // Move down after details
       }
 
       // Function to draw expense item
       function drawExpenseItem(item, index) {
+        let y = doc.y;
+        if (y + 20 > doc.page.height - doc.page.margins.bottom) {
+          doc.addPage();
+          drawTableHeader();
+          y = doc.y;
+        }
         doc
           .fontSize(10)
-          .text(index.toString() + ".", 70, y)
-          .text(item.product.category.name, 80, y)
-          .text(item.product.name, 200, y)
-          .text(item.quantity.toString(), 280, y)
-          .text(item.product.unit, 310, y)
-          .text(formatAmount(item.price), 370, y)
-          .text(formatAmount(item.quantity * item.price), 450, y, { align: 'right' });
+          .text(index.toString() + ".", 50, y)
+          .text(item.product.category.name, 60, y)
+          .text(item.product.name, 300, y)
+          .text(item.quantity.toString(), 450, y)
+          .text(item.product.unit, 500, y)
+          .text(formatAmount(item.price), 550, y)
+          .text(formatAmount(item.quantity * item.price), 650, y, { align: 'right' });
 
-        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under each item
-        y += 20; // Move down after each item
+        doc.moveTo(50, y + 15).lineTo(750, y + 15).stroke(); // Horizontal line under each item
+        doc.y += 10; // Move down after each item
       }
 
-      // Function to draw expense details
+      // Function to draw sub total
       function drawSubTotal(calculatedAmount) {
+        let y = doc.y;
+        if (y + 20 > doc.page.height - doc.page.margins.bottom) {
+          doc.addPage();
+          drawTableHeader();
+          y = doc.y;
+        }
         doc
           .fontSize(10)
-          .text('Sub Total:', 70, y, { bold: true });
+          .text('Sub Total:', 50, y, { bold: true });
         doc
           .fontSize(10)
           .text(formatAmount(calculatedAmount), 450, y, { align: 'right', bold: true });
 
-        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under details
-        y += 20; // Move down after details
+        doc.moveTo(50, y + 15).lineTo(750, y + 15).stroke(); // Horizontal line under sub total
+        doc.y += 20; // Move down after sub total
       }
 
       // Function to draw total amount at the end
       function drawTotalAmount(totalAmount: number) {
+        let y = doc.y;
         doc.moveDown(2); // Move down for spacing before total
         doc
           .font('Helvetica-Bold')
           .fontSize(12)
-          .text('Grand Total Amount:', 70, y, { bold: true });
+          .text('Grand Total Amount:', 50, y, { bold: true });
 
         // Set font style and align right
         doc.font('Helvetica-Bold').fontSize(12).text(formatAmount(totalAmount), 450, y, { align: 'right' });
 
-        doc.moveTo(70, y + 15).lineTo(550, y + 15).stroke(); // Horizontal line under total
-        y += 20; // Move down after total
+        doc.moveTo(50, y + 15).lineTo(750, y + 15).stroke(); // Horizontal line under total
+        doc.y += 20; // Move down after total
       }
 
       // Function to format amount with custom separators
@@ -213,7 +222,7 @@ export class ReportsService {
       throw new HttpException('Invalid date range or category', HttpStatus.BAD_REQUEST);
     }
   }
-
+  
   // ***********************************************************************************************************************************************
   async generateExcel(): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();

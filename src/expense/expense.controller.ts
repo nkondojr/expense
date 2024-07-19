@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Res, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
-import * as express from 'express';
 
 @Controller('api/expense')
 @UseGuards(JwtAuthGuard)
@@ -26,14 +25,5 @@ export class ExpenseController {
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<any> {
     return this.expenseService.findOne(id);
-  }
-
-  @Get('reports/excel')
-  async generateExcel(@Res() res: express.Response): Promise<void> {
-    const buffer = await this.expenseService.generateExcel();
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=expense-report.xlsx');
-    res.send(buffer);
   }
 }
