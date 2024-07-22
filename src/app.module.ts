@@ -17,6 +17,8 @@ import { ExpenseItemsModule } from './expense_items/expense_items.module';
 import { ExpenseItem } from './expense_items/entities/expense_item.entity';
 import { ReportsModule } from './reports/reports.module';
 import { Report } from './reports/entities/report.entity';
+import { OrganizationModule } from './organizations/organizations.module'; // Adjust the path if necessary
+import { Organization } from './organizations/entities/organization.entity';
 
 @Module({
   imports: [
@@ -32,7 +34,7 @@ import { Report } from './reports/entities/report.entity';
         username: ConfigService.get('DB_USERNAME'),
         password: ConfigService.get('DB_PASSWORD'),
         database: ConfigService.get('DB_NAME'),
-        entities: [User, Category, Product, Expense, ExpenseItem, Report],
+        entities: [User, Category, Product, Expense, ExpenseItem, Report, Organization],
         // entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         // do NOT use synchronize: true in real projects
         synchronize: true,
@@ -45,7 +47,8 @@ import { Report } from './reports/entities/report.entity';
     ProductsModule,
     ExpenseModule,
     ExpenseItemsModule,
-    ReportsModule],
+    ReportsModule,
+    OrganizationModule],
   controllers: [AppController],
   providers: [AppService],
 })
