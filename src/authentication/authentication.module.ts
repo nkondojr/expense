@@ -1,22 +1,26 @@
 import { Module } from '@nestjs/common';
-import { AuthenticationService } from './authentication.service';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
+import { UsersModule } from 'src/users/users.module';
+import { UsersService } from 'src/users/users.service';
+import { User } from 'src/users/entities/user.entity';
+
 import { AuthenticationController } from './authentication.controller';
+import { AuthenticationService } from './authentication.service';
+import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtRefreshTokenStrategy } from './strategy/jwt-refresh-token.strategy';
 import { LocalStrategy } from './strategy/local.strategy';
 import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
-import { UsersService } from 'src/users/users.service';
-import { JwtStrategy } from './strategy/jwt.strategy';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { User } from 'src/users/entities/user.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     UsersModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true, // Make ConfigModule global if needed
+    }),
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
@@ -28,10 +32,11 @@ import { UsersModule } from 'src/users/users.module';
   providers: [
     AuthenticationService,
     JwtStrategy,
-    UsersService,
-    RefreshTokenIdsStorage,
+    JwtRefreshTokenStrategy,
     LocalStrategy,
-    JwtRefreshTokenStrategy
+    RefreshTokenIdsStorage,
+    UsersService,
   ],
+  exports: [AuthenticationService, JwtStrategy, JwtRefreshTokenStrategy, LocalStrategy], // Export providers if used in other modules
 })
 export class AuthenticationModule {}

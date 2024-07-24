@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, UseGuards, UnauthorizedException, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Headers, UseGuards, UnauthorizedException, ValidationPipe, UsePipes } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -27,25 +27,16 @@ export class AuthenticationController {
 
   @Public()
   // @UseGuards(LocalAuthGuard)
-  @Patch('login')
+  @Post('login')
   async signIn(@Body() createAuthenticationDto: CreateAuthenticationDto) {
     return this.authenticationService.signIn(createAuthenticationDto);
   }
 
-  @UseGuards(JwtRefreshTokenGuard)
+  // @UseGuards(JwtRefreshTokenGuard)
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authenticationService.refreshAccessToken(refreshTokenDto.refresh_token);
   }
-
-  // @Get('profile')
-  // async getProfile(@Headers('Authorization') authorization: string): Promise<User> {
-  //   if (!authorization || !authorization.startsWith('Bearer ')) {
-  //     throw new UnauthorizedException('Authorization header not found');
-  //   }
-  //   const accessToken = authorization.split(' ')[1];
-  //   return await this.authenticationService.getProfile(accessToken);
-  // }
 
   @Get('profile')
   async getProfile(@Headers('Authorization') authorization: string): Promise<Partial<User>> {
@@ -56,8 +47,8 @@ export class AuthenticationController {
     return await this.authenticationService.getProfile(accessToken);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Patch('logout')
+  // @UseGuards(JwtAuthGuard)
+  @Post('revoke-token')
   async invalidateToken(@Headers('authorization') authorization: string) {
     const token = authorization.split(' ')[1];
     await this.authenticationService.invalidateToken(token);

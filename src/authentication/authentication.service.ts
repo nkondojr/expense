@@ -29,23 +29,25 @@ export class AuthenticationService {
       createAuthenticationDto.password,
     );
     if (!user) {
-      throw new UnauthorizedException('Invalid mobile or password');
+      throw new UnauthorizedException('Invalid username or password');
     }
-
+  
     const payload = { sub: user.id, mobile: user.mobile };
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
     });
-
+  
     // Store the refresh token in redis
     await this.refreshTokenIdsStorage.insert(user.id, refreshToken);
-
+  
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
+      message: 'Logged in successfully',
     };
   }
+  
 
 // ***********************************************************************************************************************************************
   async validateUser(mobile: string, password: string): Promise<any> {
