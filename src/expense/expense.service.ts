@@ -7,8 +7,6 @@ import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
 import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Product } from 'src/products/entities/product.entity';
-import * as ExcelJS from 'exceljs';
-import { Buffer } from 'buffer';
 
 @Injectable()
 export class ExpenseService {

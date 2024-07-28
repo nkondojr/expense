@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -17,7 +17,6 @@ import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
 
 @Module({
   imports: [
-    UsersModule,
     ConfigModule.forRoot({
       isGlobal: true, // Make ConfigModule global if needed
     }),
@@ -27,6 +26,7 @@ import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '1h' },
     }),
+    forwardRef(() => UsersModule), // Use forwardRef to avoid circular dependency
   ],
   controllers: [AuthenticationController],
   providers: [

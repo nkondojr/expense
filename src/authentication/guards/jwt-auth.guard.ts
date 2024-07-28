@@ -1,16 +1,21 @@
 import { Injectable, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
+import { Observable } from 'rxjs';
+import { AuthenticationService } from '../authentication.service'; // Adjust the import as necessary
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   private readonly logger = new Logger(JwtAuthGuard.name);
 
-  constructor(private reflector: Reflector) {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly authenticationService: AuthenticationService, // Inject AuthenticationService
+  ) {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
@@ -24,7 +29,20 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException('Invalid Authorization header format');
     }
 
-    return super.canActivate(context);
+    const token = authHeader.split(' ')[1];
+
+    if (this.authenticationService.isTokenInvalidated(token)) {
+      this.logger.error('Token has been invalidated');
+      throw new UnauthorizedException('Token has been invalidated');
+    }
+
+    const canActivate = super.canActivate(context);
+
+    if (canActivate instanceof Observable) {
+      return canActivate.toPromise();
+    }
+
+    return canActivate;
   }
 
   handleRequest(err, user, info) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Headers, UseGuards, UnauthorizedException, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Headers, UseGuards, UnauthorizedException, ValidationPipe, UsePipes, Request } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -10,6 +10,7 @@ import { Public } from './decorators/public.decorator';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('api/auth')
 export class AuthenticationController {
@@ -32,7 +33,18 @@ export class AuthenticationController {
     return this.authenticationService.signIn(createAuthenticationDto);
   }
 
-  // @UseGuards(JwtRefreshTokenGuard)
+  @UseGuards(JwtAuthGuard)
+  @Patch('change-password')
+  async changePassword(
+    @Request() req: any, 
+    @Body() changePasswordDto: ChangePasswordDto
+  ): Promise<{ message: string }> {
+    const userId = req.user.id;
+    await this.authenticationService.changePassword(userId, changePasswordDto);
+    return { message: 'Password changed successfully' };
+  }
+
+  @UseGuards(JwtRefreshTokenGuard)
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authenticationService.refreshAccessToken(refreshTokenDto.refresh_token);
@@ -47,9 +59,9 @@ export class AuthenticationController {
     return await this.authenticationService.getProfile(accessToken);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  @Post('revoke-token')
-  async invalidateToken(@Headers('authorization') authorization: string) {
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Headers('authorization') authorization: string) {
     const token = authorization.split(' ')[1];
     await this.authenticationService.invalidateToken(token);
     return { message: 'Logout successfully' };
