@@ -14,10 +14,10 @@ export class CategoriesService {
   ) {}
 
 // **********************************************************************************************************************************************
-async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<{ message: string }> {
+async create(createCategoryDto: CreateCategoryDto, user_id: string): Promise<{ message: string }> {
   const category = this.categoryRepository.create({
     ...createCategoryDto,
-    user: { id: userId } as any,  // Cast to avoid TypeScript issue
+    user: { id: user_id } as any,  // Cast to avoid TypeScript issue
   });
 
   try {
@@ -52,7 +52,7 @@ async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<{ me
     categories.forEach(category => {
       if (category.user) {
         category['createdBy'] = category.user.id;
-        category['username'] = category.user.full_name;
+        category['userName'] = category.user.full_name;
         delete category.user;
       }
     });

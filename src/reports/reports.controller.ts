@@ -10,12 +10,12 @@ export class ReportsController {
 
   @Put('pdf')
   async getPdfReport(
-    @Body() payload: { startDate: string; endDate: string; categoryIds: string[] },
+    @Body() payload: { start_date: string; end_date: string; categoryIds: string[] },
     @Res() res: express.Response
   ) {
-    const { startDate, endDate, categoryIds } = payload;
+    const { start_date, end_date, categoryIds } = payload;
     try {
-      const filePath = await this.reportsService.generatePdfReport(startDate, endDate, categoryIds);
+      const filePath = await this.reportsService.generatePdfReport(start_date, end_date, categoryIds);
       res.download(filePath);
     } catch (error) {
       // Handle any errors (e.g., logging and sending an error response)

@@ -39,8 +39,8 @@ export class AuthenticationController {
     @Request() req: any, 
     @Body() changePasswordDto: ChangePasswordDto
   ): Promise<{ message: string }> {
-    const userId = req.user.id;
-    await this.authenticationService.changePassword(userId, changePasswordDto);
+    const user_id = req.user.id;
+    await this.authenticationService.changePassword(user_id, changePasswordDto);
     return { message: 'Password changed successfully' };
   }
 

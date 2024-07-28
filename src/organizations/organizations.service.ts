@@ -16,7 +16,6 @@ export class OrganizationService {
   // ***********************************************************************************************************************************************
   async create(createOrganizationDto: CreateOrganizationDto): Promise<{ message: string }> {
     const { name, reg_no, region, address, phone_no, tin_no, website } = createOrganizationDto;
-
     const organization = new Organization();
     organization.name = name;
     organization.reg_no = reg_no;
@@ -25,7 +24,6 @@ export class OrganizationService {
     organization.phone_no = phone_no;
     organization.tin_no = tin_no;
     organization.website = website;
-
     try {
       await this.organizationRepository.save(organization);
       return { message: 'Organization created successfully' };
@@ -51,16 +49,12 @@ export class OrganizationService {
         'organization.tin_no',
         'organization.website',
       ]);
-
     if (searchTerm) {
       query.where('organization.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
     }
-
     query.skip((page - 1) * pageSize).take(pageSize);
-
     const [organizations, total] = await query.getManyAndCount();
     const lastPage = Math.ceil(total / pageSize);
-
     return {
       links: {
         next: page < lastPage ? `/organizations?page=${page + 1}&pageSize=${pageSize}` : null,
@@ -79,15 +73,12 @@ export class OrganizationService {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
     }
-  
     const organization = await this.organizationRepository.findOne({
       where: { id },
     });
-  
     if (!organization) {
       throw new NotFoundException(`Organization with ID ${id} not found`);
     }
-  
     return {
       id: organization.id,
       name: organization.name,
@@ -105,16 +96,13 @@ export class OrganizationService {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
     }
-
     const organization = await this.organizationRepository.preload({
       id,
       ...updateOrganizationDto,
     });
-
     if (!organization) {
       throw new NotFoundException(`Organization with ID ${id} not found`);
     }
-
     try {
       await this.organizationRepository.save(organization);
       return { message: 'Organization updated successfully' };
@@ -132,12 +120,10 @@ export class OrganizationService {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
     }
-
     const result = await this.organizationRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Organization with ID ${id} not found`);
     }
-
     return { message: 'Organization deleted successfully' };
   }
 }

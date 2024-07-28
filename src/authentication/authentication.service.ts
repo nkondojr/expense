@@ -37,7 +37,6 @@ export class AuthenticationService {
     if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }
-
     const payload = { sub: user.id, mobile: user.mobile };
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -46,7 +45,6 @@ export class AuthenticationService {
 
     // Store the refresh token in redis
     await this.refreshTokenIdsStorage.insert(user.id, refreshToken);
-
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -67,24 +65,18 @@ export class AuthenticationService {
   // ***********************************************************************************************************************************************
   async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<string> {
     const { old_password, new_password, confirm_new_password } = changePasswordDto;
-
     if (new_password !== confirm_new_password) {
       throw new BadRequestException('New passwords do not match');
     }
-
     const user = await this.userRepository.findOne({ where: { id } });
-
     const isMatch = await bcrypt.compare(old_password, user.password);
     if (!isMatch) {
       throw new BadRequestException('Old password is incorrect');
     }
-
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(new_password, salt);
     user.password = hashedPassword;
-
     await this.userRepository.save(user);
-
     return 'Password changed successfully';
   }
 
@@ -113,7 +105,6 @@ export class AuthenticationService {
       if (await this.isTokenInvalidated(decoded.sub)) {
         throw new UnauthorizedException('Token has been invalidated');
       }
-
       const user = await this.usersService.getUserProfile(decoded.sub);
       if (!user) {
         throw new UnauthorizedException('User not found');

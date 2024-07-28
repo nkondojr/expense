@@ -1,9 +1,12 @@
-import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class CreateExpenseItemDto {
   @IsNumber()
   @IsNotEmpty()
   quantity: number;
+
+  @IsString()
+  unit: string;
 
   @IsNumber()
   @IsNotEmpty()

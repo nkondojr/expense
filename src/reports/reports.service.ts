@@ -27,11 +27,11 @@ export class ReportsService {
         }
     }
 
-    async generatePdfReport(startDate: string, endDate: string, categoryIds: string[]): Promise<string> {
+    async generatePdfReport(start_date: string, end_date: string, categoryIds: string[]): Promise<string> {
         this.ensureReportsDirectoryExists();
         try {
-            const startDateObj = new Date(startDate);
-            const endDateObj = new Date(endDate);
+            const startDateObj = new Date(start_date);
+            const endDateObj = new Date(end_date);
 
             const query: any = {
                 date: Between(startDateObj, endDateObj),
@@ -146,7 +146,7 @@ export class ReportsService {
                     .text(item.product.category.name, 60, y)
                     .text(item.product.name, 300, y)
                     .text(item.quantity.toString(), 450, y)
-                    .text(item.product.unit, 500, y)
+                    .text(item.unit, 500, y)
                     .text(formatAmount(item.price), 550, y)
                     .text(formatAmount(item.quantity * item.price), 650, y, { align: 'right' });
 
@@ -203,7 +203,7 @@ export class ReportsService {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('EXPENSES');
 
-        const headerRow = worksheet.addRow(['DATE', 'PRODUCT', 'QUANTITY', 'PRICE', 'AMOUNT']);
+        const headerRow = worksheet.addRow(['DATE', 'PRODUCT', 'QUANTITY', 'UNIT', 'PRICE', 'AMOUNT']);
 
         headerRow.eachCell((cell) => {
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -241,22 +241,26 @@ export class ReportsService {
                     '',
                     item.product.name,
                     item.quantity,
+                    item.unit,
                     item.price,
                     item.quantity * item.price
                 ]);
 
-                row.getCell(4).alignment = { horizontal: 'right' };
-                row.getCell(4).numFmt = '#,##0.00';
+                // row.getCell(5).alignment = { horizontal: 'right' };
+                // row.getCell(5).numFmt = '#,##0.00';
                 row.getCell(5).alignment = { horizontal: 'right' };
                 row.getCell(5).numFmt = '#,##0.00';
+                row.getCell(6).alignment = { horizontal: 'right' };
+                row.getCell(6).numFmt = '#,##0.00';
             });
         });
 
         worksheet.getColumn(1).width = 15;
-        worksheet.getColumn(2).width = 25;
-        worksheet.getColumn(3).width = 15;
+        worksheet.getColumn(2).width = 20;
+        worksheet.getColumn(3).width = 25;
         worksheet.getColumn(4).width = 15;
-        worksheet.getColumn(5).width = 20;
+        worksheet.getColumn(5).width = 15;
+        worksheet.getColumn(6).width = 20;
 
         const buffer: Buffer = await workbook.xlsx.writeBuffer() as Buffer;
 
