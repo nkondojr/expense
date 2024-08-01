@@ -4,7 +4,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard'; // Assuming you have this guard
 
-@Controller('api/organizations')
+@Controller('organizations')
 @UseGuards(JwtAuthGuard)
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}

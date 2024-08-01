@@ -1,4 +1,4 @@
 export class CreateAuthenticationDto {
-    mobile: string;
+    email: string;
     password: string;
 }

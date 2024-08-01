@@ -6,7 +6,7 @@ import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 import { GetUser } from 'src/authentication/decorators/get-user.decorator';
 import { Category } from './entities/category.entity';
 
-@Controller('api/categories')
+@Controller('categories')
 @UseGuards(JwtAuthGuard)
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}

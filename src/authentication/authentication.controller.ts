@@ -12,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
-@Controller('api/auth')
+@Controller('auth')
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,

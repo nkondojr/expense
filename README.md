@@ -26,6 +26,8 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+**This template is based on a nodeJS front-end (VueJS) [available here](https://github.com/nkondojr/Qela-Expense) for authentication, authorization and data example.**
+
 ## Installation
 
 ```bash

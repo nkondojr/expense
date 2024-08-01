@@ -40,8 +40,8 @@ export class UsersService {
   }
 
   // ***********************************************************************************************************************************************
-  async findByMobile(mobile: string): Promise<User> {
-    return this.userRepository.findOne({ where: { mobile } });
+  async findByEmail(email: string): Promise<User> {
+    return this.userRepository.findOne({ where: { email } });
   }
 
   // ***********************************************************************************************************************************************

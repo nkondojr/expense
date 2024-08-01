@@ -31,13 +31,13 @@ export class AuthenticationService {
   // ***********************************************************************************************************************************************
   async signIn(createAuthenticationDto: CreateAuthenticationDto) {
     const user = await this.validateUser(
-      createAuthenticationDto.mobile,
+      createAuthenticationDto.email,
       createAuthenticationDto.password,
     );
     if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }
-    const payload = { sub: user.id, mobile: user.mobile };
+    const payload = { sub: user.id, email: user.email };
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
@@ -53,8 +53,8 @@ export class AuthenticationService {
   }
 
   // ***********************************************************************************************************************************************
-  async validateUser(mobile: string, password: string): Promise<any> {
-    const user = await this.usersService.findByMobile(mobile);
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.usersService.findByEmail(email);
     if (user && (await user.validatePassword(password))) {
       const { password, ...result } = user;
       return result;
@@ -87,7 +87,7 @@ export class AuthenticationService {
     try {
       const decoded = await this.jwtService.verifyAsync(refreshToken);
       await this.refreshTokenIdsStorage.validate(decoded.sub, refreshToken);
-      const payload = { sub: decoded.sub, mobile: decoded.mobile };
+      const payload = { sub: decoded.sub, email: decoded.email };
       const accessToken = await this.jwtService.signAsync(payload);
       return { access_token: accessToken };
     } catch (error) {

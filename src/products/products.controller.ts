@@ -6,7 +6,7 @@ import { User } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/authentication/decorators/get-user.decorator';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 
-@Controller('api/products')
+@Controller('products')
 @UseGuards(JwtAuthGuard)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
