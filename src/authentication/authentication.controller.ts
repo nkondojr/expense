@@ -20,7 +20,7 @@ export class AuthenticationController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @Post('register')
+  @Post('create')
   @UsePipes(new ValidationPipe())
   async signUp(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);

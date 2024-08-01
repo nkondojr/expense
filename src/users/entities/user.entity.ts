@@ -21,6 +21,15 @@ export class User {
     @Column({ nullable: false })
     password: string;
 
+    @Column({ type: 'boolean', default: true })
+    is_active: boolean;
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    created_at: Date;
+
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    updated_at: Date;
+
     @OneToMany(() => Category, category => category.user)
     categories: Category[];
 
