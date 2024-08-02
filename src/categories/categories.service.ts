@@ -11,34 +11,34 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
-// **********************************************************************************************************************************************
-async create(createCategoryDto: CreateCategoryDto, user_id: string): Promise<{ message: string }> {
-  const category = this.categoryRepository.create({
-    ...createCategoryDto,
-    user: { id: user_id } as any,  // Cast to avoid TypeScript issue
-  });
+  // **********************************************************************************************************************************************
+  async create(createCategoryDto: CreateCategoryDto, user_id: string): Promise<{ message: string }> {
+    const category = this.categoryRepository.create({
+      ...createCategoryDto,
+      user: { id: user_id } as any,  // Cast to avoid TypeScript issue
+    });
 
-  try {
-    await this.categoryRepository.save(category);
-    return {
-      message: 'Category created successfully',
-    };
-  } catch (error) {
-    if (error.code === '23505') {
-      throw new ConflictException('Category already exists');
-    } else {
-      throw error;
+    try {
+      await this.categoryRepository.save(category);
+      return {
+        message: 'Category created successfully',
+      };
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Category already exists');
+      } else {
+        throw error;
+      }
     }
   }
-}
 
-// ***********************************************************************************************************************************************
+  // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     const query = this.categoryRepository.createQueryBuilder('category')
       .leftJoinAndSelect('category.user', 'user')
-      .select(['category.id', 'category.name', 'user.id', 'user.full_name']);
+      .select(['category.id', 'category.name', 'user.id', 'user.username']);
 
     if (searchTerm) {
       query.where('category.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
@@ -52,7 +52,7 @@ async create(createCategoryDto: CreateCategoryDto, user_id: string): Promise<{ m
     categories.forEach(category => {
       if (category.user) {
         category['createdBy'] = category.user.id;
-        category['userName'] = category.user.full_name;
+        category['userName'] = category.user.username;
         delete category.user;
       }
     });
@@ -69,7 +69,7 @@ async create(createCategoryDto: CreateCategoryDto, user_id: string): Promise<{ m
     };
   }
 
-// ***********************************************************************************************************************************************
+  // ***********************************************************************************************************************************************
   async findOne(id: string): Promise<Category> {
     // Validate the ID format
     if (!isUUID(id)) {
