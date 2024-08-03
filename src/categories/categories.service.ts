@@ -5,6 +5,7 @@ import { Category } from './entities/category.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { isUUID } from 'class-validator';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -89,6 +90,49 @@ export class CategoriesService {
     }
 
     return category;
+  }
+
+  // Update category
+  async update(id: string, updateCategoryDto: UpdateCategoryDto, user_id: string): Promise<{ message: string }> {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const category = await this.categoryRepository.findOne({ where: { id, user: { id: user_id } } });
+
+    if (!category) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
+    Object.assign(category, updateCategoryDto);
+
+    try {
+      await this.categoryRepository.save(category);
+      return { message: 'Category updated successfully' };
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Duplicate value violates unique constraint');
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // Delete category
+  async remove(id: string, user_id: string): Promise<{ message: string }> {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const category = await this.categoryRepository.findOne({ where: { id, user: { id: user_id } } });
+
+    if (!category) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
+    await this.categoryRepository.remove(category);
+
+    return { message: 'Category deleted successfully' };
   }
 
 }

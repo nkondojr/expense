@@ -30,4 +30,15 @@ export class ProductsController {
   async findOne(@Param('id') id: string): Promise<any> {
     return this.productsService.findOne(id);
   }
+
+  @Patch(':id')
+  @UsePipes(new ValidationPipe())
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto): Promise<{ message: string }> {
+    return this.productsService.update(id, updateProductDto);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string): Promise<{ message: string }> {
+    return this.productsService.remove(id);
+  }
 }

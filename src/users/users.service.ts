@@ -100,36 +100,6 @@ export class UsersService {
   }
 
   // ***********************************************************************************************************************************************
-  // async update(id: string, updateUserDto: UpdateUserDto): Promise<Partial<User>> {
-  //   if (!isUUID(id)) {
-  //     throw new BadRequestException('Invalid ID format');
-  //   }
-
-  //   const user = await this.userRepository.findOne({ where: { id } });
-  //   if (!user) {
-  //     throw new NotFoundException(`User with ID ${id} not found`);
-  //   }
-
-  //   if (updateUserDto.password) {
-  //     const salt = await bcrypt.genSalt();
-  //     updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
-  //   }
-
-  //   try {
-  //     await this.userRepository.update(id, updateUserDto);
-  //   } catch (error) {
-  //     if (error.code === '23505') {
-  //       throw new ConflictException('Duplicate value violates unique constraint');
-  //     } else {
-  //       throw error;
-  //     }
-  //   }
-
-  //   const updatedUser = await this.userRepository.findOne({ where: { id } });
-  //   const { password, ...userWithoutPassword } = updatedUser;
-  //   return userWithoutPassword;
-  // }
-
   async update(id: string, updateUserDto: UpdateUserDto): Promise<{ message: string; user: Partial<User> }> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');

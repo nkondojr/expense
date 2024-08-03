@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Category } from 'src/categories/entities/category.entity';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -115,5 +116,52 @@ export class ProductsService {
     };
 
     return result;
+  }
+
+  // ***********************************************************************************************************************************************
+  async update(id: string, updateProductDto: UpdateProductDto): Promise<{ message: string }> {
+    // Validate the ID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    if (updateProductDto.categoryId) {
+      const categoryExists = await this.categoryRepository.findOne({ where: { id: updateProductDto.categoryId } });
+      if (!categoryExists) {
+        throw new NotFoundException(`Category with id ${updateProductDto.categoryId} not found`);
+      }
+    }
+
+    if (updateProductDto.image) {
+      updateProductDto.image = saveImage(updateProductDto.image);
+    }
+
+    await this.productRepository.update(id, updateProductDto);
+    return {
+      message: 'Product updated successfully',
+    };
+  }
+
+  // ***********************************************************************************************************************************************
+  async remove(id: string): Promise<{ message: string }> {
+    // Validate the ID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    await this.productRepository.delete(id);
+    return {
+      message: 'Product deleted successfully',
+    };
   }
 }

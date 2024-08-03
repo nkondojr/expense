@@ -7,6 +7,7 @@ import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
 import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Product } from 'src/products/entities/product.entity';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
 
 @Injectable()
 export class ExpenseService {
@@ -160,4 +161,81 @@ export class ExpenseService {
 
     return result;
   }
+
+   // ***********************************************************************************************************************************************
+   async update(id: string, updateExpenseDto: UpdateExpenseDto): Promise<{ message: string }> {
+    // Validate the ID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const expense = await this.expenseRepository.findOne({ where: { id } });
+    if (!expense) {
+      throw new NotFoundException(`Expense with ID ${id} not found`);
+    }
+
+    if (updateExpenseDto.expenseItems) {
+      const invalidUUIDs = updateExpenseDto.expenseItems.filter(item => !isUUID(item.productId));
+      if (invalidUUIDs.length > 0) {
+        throw new UnprocessableEntityException(`Invalid ID format for product IDs: ${invalidUUIDs.map(item => item.productId).join(', ')}`);
+      }
+
+      // Validate product existence for each expense item
+      for (const item of updateExpenseDto.expenseItems) {
+        const product = await this.productRepository.findOne({ where: { id: item.productId } });
+        if (!product) {
+          throw new NotFoundException(`Product with id ${item.productId} not found`);
+        }
+      }
+    }
+
+    if (updateExpenseDto.attachment) {
+      updateExpenseDto.attachment = saveImage(updateExpenseDto.attachment);
+    }
+
+    await this.expenseRepository.update(id, updateExpenseDto);
+
+    if (updateExpenseDto.expenseItems) {
+      // Delete existing expense items
+      await this.expenseItemsRepository.delete({ expense: { id } });
+
+      // Create new expense items
+      const expenseItemsEntities = updateExpenseDto.expenseItems.map(item => {
+        const expenseItem = new ExpenseItem();
+        expenseItem.quantity = item.quantity;
+        expenseItem.unit = item.unit;
+        expenseItem.price = item.price;
+        expenseItem.expense = { id } as any;
+        expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
+        return expenseItem;
+      });
+
+      // Save new expense items
+      await this.expenseItemsRepository.save(expenseItemsEntities);
+    }
+
+    return {
+      message: 'Expense updated successfully',
+    };
+  }
+
+  // ***********************************************************************************************************************************************
+  async remove(id: string): Promise<{ message: string }> {
+    // Validate the ID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const expense = await this.expenseRepository.findOne({ where: { id } });
+    if (!expense) {
+      throw new NotFoundException(`Expense with ID ${id} not found`);
+    }
+
+    await this.expenseItemsRepository.delete({ expense: { id } });
+    await this.expenseRepository.delete(id);
+    return {
+      message: 'Expense deleted successfully',
+    };
+  }
+
 }
