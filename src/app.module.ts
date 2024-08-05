@@ -19,6 +19,8 @@ import { ReportsModule } from './reports/reports.module';
 import { Report } from './reports/entities/report.entity';
 import { OrganizationModule } from './organizations/organizations.module'; // Adjust the path if necessary
 import { Organization } from './organizations/entities/organization.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -52,4 +54,4 @@ import { Organization } from './organizations/entities/organization.entity';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

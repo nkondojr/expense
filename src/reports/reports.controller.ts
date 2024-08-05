@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Res, Put, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Body, Res, Put, UseGuards, HttpStatus, Post } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import * as express from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
@@ -8,7 +8,7 @@ import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  @Put('pdf')
+  @Post('pdf')
   async getPdfReport(
     @Body() payload: { start_date: string; end_date: string; categoryIds: string[] },
     @Res() res: express.Response

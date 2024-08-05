@@ -14,11 +14,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // app.useGlobalPipes(new ValidationPipe());
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  // Serve static files from the 'public' directory
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
     prefix: '/uploads/',
   });
-  
+
+
   await app.listen(5000);
 }
 bootstrap();
