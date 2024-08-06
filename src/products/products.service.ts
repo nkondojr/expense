@@ -21,21 +21,29 @@ export class ProductsService {
   // ***********************************************************************************************************************************************
   async create(createProductDto: CreateProductDto): Promise<{ message: string }> {
     const { name, description, image, categoryId } = createProductDto;
-
+  
     // Validate that category exists
     const categoryExists = await this.categoryRepository.findOne({ where: { id: categoryId } });
     if (!categoryExists) {
       throw new NotFoundException(`Category with id ${categoryId} not found`);
     }
-
-    const imageUrl = saveImage(image);
-
+  
+    let imageUrl: string | null = null;
+  
+    if (image) {
+      try {
+        imageUrl = saveImage(image);
+      } catch (error) {
+        throw new BadRequestException('Invalid image format');
+      }
+    }
+  
     const product = new Product();
     product.name = name;
     product.description = description;
-    product.image = imageUrl;
+    product.image = imageUrl; // this will be null if no image is provided
     product.categoryId = categoryId;
-
+  
     try {
       await this.productRepository.save(product);
       return {
@@ -49,6 +57,7 @@ export class ProductsService {
       }
     }
   }
+  
 
   // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
