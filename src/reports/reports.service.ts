@@ -21,7 +21,7 @@ export class ReportsService {
 
     // Ensure the reports directory exists
     private ensureReportsDirectoryExists() {
-        const reportsDir = join(__dirname, '..', '..', 'reports');
+        const reportsDir = join(__dirname, '..', 'reports');
         if (!existsSync(reportsDir)) {
             mkdirSync(reportsDir);
         }

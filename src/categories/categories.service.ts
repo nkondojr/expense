@@ -118,22 +118,26 @@ export class CategoriesService {
     }
   }
 
-  // Delete category
   async remove(id: string, user_id: string): Promise<{ message: string }> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
     }
-
-    const category = await this.categoryRepository.findOne({ where: { id, user: { id: user_id } } });
-
+  
+    const category = await this.categoryRepository.findOne({ where: { id, user: { id: user_id } }, relations: ['products'] });
+  
     if (!category) {
       throw new NotFoundException(`Category with id ${id} not found`);
     }
-
+  
+    if (category.products.length > 0) {
+      throw new BadRequestException('Category cannot be deleted because it has related products');
+    }
+  
     await this.categoryRepository.remove(category);
-
+  
     return { message: 'Category deleted successfully' };
   }
+  
 
 }
 
