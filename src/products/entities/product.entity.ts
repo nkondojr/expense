@@ -20,11 +20,11 @@ export class Product {
   @Column({ nullable: false })
   categoryId: string;
 
-  @ManyToOne(() => Category, category => category.products)
-  category: Category;
-
   @ManyToOne(() => User, user => user.products)
   user: User;
+
+  @ManyToOne(() => Category, category => category.products)
+  category: Category;
 
   @OneToMany(() => ExpenseItem, expenseItems => expenseItems.product)
   expenseItems: ExpenseItem[];

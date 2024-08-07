@@ -25,16 +25,16 @@ export class ExpenseService {
   // ***********************************************************************************************************************************************
   async create(createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
     const { date, amount, description, attachment, expenseItems } = createExpenseDto;
-
+  
     if (!expenseItems || expenseItems.length === 0) {
       throw new BadRequestException('Expense items cannot be empty');
     }
-
+  
     const invalidUUIDs = expenseItems.filter(item => !isUUID(item.productId));
     if (invalidUUIDs.length > 0) {
       throw new UnprocessableEntityException(`Invalid ID format for product IDs: ${invalidUUIDs.map(item => item.productId).join(', ')}`);
     }
-
+  
     // Validate product existence for each expense item
     for (const item of expenseItems) {
       const product = await this.productRepository.findOne({ where: { id: item.productId } });
@@ -42,20 +42,21 @@ export class ExpenseService {
         throw new NotFoundException(`Product with id ${item.productId} not found`);
       }
     }
-
-    const imageUrl = saveImage(attachment);
-
+  
+    // Handle the attachment
+    const imageUrl = attachment ? saveImage(attachment) : null;
+  
     const expense = this.expenseRepository.create({
       date,
       amount,
       description,
-      attachment: imageUrl, // Use the imageUrl instead of attachment
+      attachment: imageUrl,
     });
-
+  
     try {
       // Save the expense
       const savedExpense = await this.expenseRepository.save(expense);
-
+  
       // Create expense items
       const expenseItemsEntities = expenseItems.map(item => {
         const expenseItem = new ExpenseItem();
@@ -66,10 +67,10 @@ export class ExpenseService {
         expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
         return expenseItem;
       });
-
+  
       // Save expense items
       await this.expenseItemsRepository.save(expenseItemsEntities);
-
+  
       return {
         message: 'Expense created successfully',
       };

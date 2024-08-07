@@ -55,7 +55,7 @@ export class ReportsService {
             const organizationName = organization.length > 0 ? organization[0].name : 'Unknown Organization';
 
             const doc = new PDFDocument({ layout: 'landscape', margin: 50 });
-            const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
+            const filePath = join(__dirname, '..', 'reports', 'expense-report.pdf');
             doc.pipe(createWriteStream(filePath));
 
             // Organization Header
