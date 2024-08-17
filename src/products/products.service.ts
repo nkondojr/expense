@@ -20,16 +20,16 @@ export class ProductsService {
 
   // ***********************************************************************************************************************************************
   async create(createProductDto: CreateProductDto): Promise<{ message: string }> {
-    const { name, description, image, categoryId } = createProductDto;
-  
+    const { name, unit, description, image, categoryId } = createProductDto;
+
     // Validate that category exists
     const categoryExists = await this.categoryRepository.findOne({ where: { id: categoryId } });
     if (!categoryExists) {
       throw new NotFoundException(`Category with id ${categoryId} not found`);
     }
-  
+
     let imageUrl: string | null = null;
-  
+
     if (image) {
       try {
         imageUrl = saveImage(image);
@@ -37,13 +37,14 @@ export class ProductsService {
         throw new BadRequestException('Invalid image format');
       }
     }
-  
+
     const product = new Product();
     product.name = name;
+    product.unit = unit;
     product.description = description;
     product.image = imageUrl; // this will be null if no image is provided
     product.categoryId = categoryId;
-  
+
     try {
       await this.productRepository.save(product);
       return {
@@ -57,7 +58,7 @@ export class ProductsService {
       }
     }
   }
-  
+
 
   // ***********************************************************************************************************************************************
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
@@ -66,11 +67,13 @@ export class ProductsService {
       .select([
         'product.id',
         'product.name',
+        'product.unit',
         'product.description',
         'product.image',
         'product.categoryId',
-        'product.createdAt',
         'category.name',
+        'product.created_at',
+        'product.updated_at',
       ]);
 
     if (searchTerm) {
@@ -121,6 +124,10 @@ export class ProductsService {
     const result = {
       id: product.id,
       name: product.name,
+      unit: product.unit,
+      created_at: product.created_at,
+      updated_at: product.updated_at,
+      categoryId: product.category.id,
       category_name: product.category.name,
     };
 

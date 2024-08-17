@@ -6,6 +6,9 @@ export class CreateProductDto {
     name: string;
 
     @IsString()
+    unit: string;
+
+    @IsString()
     @IsNotEmpty()
     description: string;
 

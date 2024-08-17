@@ -146,7 +146,7 @@ export class ReportsService {
                     .text(item.product.category.name, 60, y)
                     .text(item.product.name, 300, y)
                     .text(item.quantity.toString(), 450, y)
-                    .text(item.unit, 500, y)
+                    .text(item.product.unit, 500, y)
                     .text(formatAmount(item.price), 550, y)
                     .text(formatAmount(item.quantity * item.price), 650, y, { align: 'right' });
 
@@ -241,7 +241,7 @@ export class ReportsService {
                     '',
                     item.product.name,
                     item.quantity,
-                    item.unit,
+                    item.product.unit,
                     item.price,
                     item.quantity * item.price
                 ]);

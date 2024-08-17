@@ -11,6 +11,9 @@ export class Product {
   @Column({ unique: true, nullable: false })
   name: string;
 
+  @Column()
+  unit: string;
+
   @Column({ type: 'text', nullable: false })
   description: string;
 
@@ -20,6 +23,12 @@ export class Product {
   @Column({ nullable: false })
   categoryId: string;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updated_at: Date;
+
   @ManyToOne(() => User, user => user.products)
   user: User;
 
@@ -28,7 +37,4 @@ export class Product {
 
   @OneToMany(() => ExpenseItem, expenseItems => expenseItems.product)
   expenseItems: ExpenseItem[];
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

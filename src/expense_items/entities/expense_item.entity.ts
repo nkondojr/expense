@@ -10,9 +10,6 @@ export class ExpenseItem {
   @Column()
   quantity: number;
 
-  @Column()
-  unit: string;
-
   @Column({ type: 'decimal' })
   price: number;
 

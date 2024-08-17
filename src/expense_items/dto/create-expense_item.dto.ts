@@ -5,9 +5,6 @@ export class CreateExpenseItemDto {
   @IsNotEmpty()
   quantity: number;
 
-  @IsString()
-  unit: string;
-
   @IsNumber()
   @IsNotEmpty()
   price: number;

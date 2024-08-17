@@ -20,8 +20,11 @@ export class Expense {
   @Column({ type: 'text', nullable: true })
   attachment: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updated_at: Date;
 
   @ManyToOne(() => User, user => user.expenses)
   createdBy: User;

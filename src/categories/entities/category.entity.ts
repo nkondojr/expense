@@ -10,12 +10,15 @@ export class Category {
   @Column({ unique: true, nullable: false })
   name: string;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updated_at: Date;
+
   @ManyToOne(() => User, user => user.categories)
   user: User;
 
   @OneToMany(() => Product, product => product.category)
   products: Product[];
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

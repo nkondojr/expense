@@ -39,7 +39,7 @@ export class CategoriesService {
   async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     const query = this.categoryRepository.createQueryBuilder('category')
       .leftJoinAndSelect('category.user', 'user')
-      .select(['category.id', 'category.name', 'user.id', 'user.username']);
+      .select(['category.id', 'category.name',  'category.created_at',  'category.updated_at', 'user.id', 'user.username']);
 
     if (searchTerm) {
       query.where('category.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
@@ -52,8 +52,8 @@ export class CategoriesService {
 
     categories.forEach(category => {
       if (category.user) {
-        category['createdBy'] = category.user.id;
-        category['userName'] = category.user.username;
+        category['user_id'] = category.user.id;
+        category['username'] = category.user.username;
         delete category.user;
       }
     });

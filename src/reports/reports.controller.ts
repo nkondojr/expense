@@ -6,7 +6,7 @@ import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(private readonly reportsService: ReportsService) { }
 
   @Post('pdf')
   async getPdfReport(
@@ -22,7 +22,7 @@ export class ReportsController {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('An error occurred while generating the report');
     }
   }
-  
+
   @Get('excel')
   async generateExcel(@Res() res: express.Response): Promise<void> {
     const buffer = await this.reportsService.generateExcel();

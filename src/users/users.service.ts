@@ -34,7 +34,7 @@ export class UsersService {
     try {
       await this.userRepository.save(user);
       return {
-        message: 'User registered successfully',
+        message: 'User created successfully',
       };
     } catch (error) {
       if (error.code === '23505') {
@@ -63,7 +63,7 @@ export class UsersService {
       .select(['user.id', 'user.username', 'user.email', 'user.mobile', 'user.is_active', 'user.created_at', 'user.updated_at']);
 
     if (searchTerm) {
-      query.where('user.username LIKE :searchTerm OR user.email LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where('user.username LIKE :searchTerm OR user.email LIKE :searchTerm OR user.mobile LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -98,6 +98,8 @@ export class UsersService {
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
+
+  
 
   // ***********************************************************************************************************************************************
   async update(id: string, updateUserDto: UpdateUserDto): Promise<{ message: string; user: Partial<User> }> {

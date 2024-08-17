@@ -61,7 +61,6 @@ export class ExpenseService {
       const expenseItemsEntities = expenseItems.map(item => {
         const expenseItem = new ExpenseItem();
         expenseItem.quantity = item.quantity;
-        expenseItem.unit = item.unit;
         expenseItem.price = item.price;
         expenseItem.expense = savedExpense;
         expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
@@ -92,7 +91,8 @@ export class ExpenseService {
         'expense.amount',
         'expense.description',
         'expense.attachment',
-        'expense.createdAt',
+        'expense.created_at',
+        'expense.updated_at',
       ]);
 
     if (searchTerm) {
@@ -110,7 +110,8 @@ export class ExpenseService {
       amount: expense.amount,
       description: expense.description,
       attachment: expense.attachment,
-      createdAt: expense.createdAt,
+      created_at: expense.created_at,
+      updated_at: expense.updated_at,
     }));
 
     return {
@@ -148,14 +149,15 @@ export class ExpenseService {
       amount: expense.amount,
       description: expense.description,
       attachment: expense.attachment,
-      createdAt: expense.createdAt,
+      created_at: expense.created_at,
+      updated_at: expense.updated_at,
       expenseItems: expense.expenseItems.map(item => ({
         id: item.id,
         quantity: item.quantity,
-        unit: item.unit,
         price: item.price,
         productId: item.product.id,
         productName: item.product.name,
+        productUnit: item.product.unit,
         categoryName: item.product.category.name,
       })),
     };
@@ -204,7 +206,6 @@ export class ExpenseService {
       const expenseItemsEntities = updateExpenseDto.expenseItems.map(item => {
         const expenseItem = new ExpenseItem();
         expenseItem.quantity = item.quantity;
-        expenseItem.unit = item.unit;
         expenseItem.price = item.price;
         expenseItem.expense = { id } as any;
         expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
