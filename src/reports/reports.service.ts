@@ -20,12 +20,21 @@ export class ReportsService {
     ) { }
 
     // Ensure the reports directory exists
+    // private ensureReportsDirectoryExists() {
+    //     const reportsDir = join(__dirname, '..', 'reports');
+    //     if (!existsSync(reportsDir)) {
+    //         mkdirSync(reportsDir);
+    //     }
+    // }
+
     private ensureReportsDirectoryExists() {
-        const reportsDir = join(__dirname, '..', 'reports');
+        const reportsDir = join(__dirname, '..', '..', 'reports');
         if (!existsSync(reportsDir)) {
             mkdirSync(reportsDir);
         }
     }
+    
+    
 
     async generatePdfReport(start_date: string, end_date: string, categoryIds: string[]): Promise<string> {
         this.ensureReportsDirectoryExists();
@@ -55,7 +64,9 @@ export class ReportsService {
             const organizationName = organization.length > 0 ? organization[0].name : 'Unknown Organization';
 
             const doc = new PDFDocument({ layout: 'landscape', margin: 50 });
-            const filePath = join(__dirname, '..', 'reports', 'expense-report.pdf');
+            // const filePath = join(__dirname, '..', 'reports', 'expense-report.pdf');
+            const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
+
             doc.pipe(createWriteStream(filePath));
 
             // Organization Header
