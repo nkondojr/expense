@@ -277,4 +277,73 @@ export class ReportsService {
 
         return buffer;
     }
+    
+    async getDashboardData(): Promise<any> {
+        console.log('Fetching dashboard data with monthly breakdown');
+    
+        // Define the start and end of today
+        const now = new Date();
+        const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+        const endOfToday = new Date(now.setHours(23, 59, 59, 999));
+    
+        // Query to fetch expenses for today
+        const todayQuery: any = {
+            date: Between(startOfToday.toISOString(), endOfToday.toISOString()),
+        };
+    
+        try {
+            // Fetch today's expenses
+            const todayExpenses = await this.expenseRepository.find({
+                where: todayQuery,
+                relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
+            });
+    
+            let totalTodayAmount = 0;
+            const monthlyData = {};
+            const categoryTotals = {};
+    
+            todayExpenses.forEach(expense => {
+                const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+                totalTodayAmount += calculatedAmount;
+    
+                expense.expenseItems.forEach(item => {
+                    const categoryName = item.product.category.name;
+                    if (!categoryTotals[categoryName]) {
+                        categoryTotals[categoryName] = 0;
+                    }
+                    categoryTotals[categoryName] += item.quantity * item.price;
+                });
+            });
+    
+            // Fetch all expenses for the graph
+            const allExpenses = await this.expenseRepository.find({
+                relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
+            });
+    
+            let totalAmount = 0;
+    
+            allExpenses.forEach(expense => {
+                const expenseMonth = new Date(expense.date).toLocaleString('default', { month: 'long', year: 'numeric' });
+                const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+                totalAmount += calculatedAmount;
+    
+                if (!monthlyData[expenseMonth]) {
+                    monthlyData[expenseMonth] = 0;
+                }
+                monthlyData[expenseMonth] += calculatedAmount;
+            });
+    
+            return {
+                totalAmount,
+                totalTodayAmount,
+                monthlyData,
+                categoryTotals,
+            };
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+            throw new HttpException('Error fetching dashboard data', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    
 }

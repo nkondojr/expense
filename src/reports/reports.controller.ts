@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Res, Put, UseGuards, HttpStatus, Post } from '@nestjs/common';
+import { Controller, Get, Body, Res, Put, UseGuards, HttpStatus, Post, Query } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import * as express from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
@@ -30,4 +30,10 @@ export class ReportsController {
     res.setHeader('Content-Disposition', 'attachment; filename=expense-report.xlsx');
     res.send(buffer);
   }
+
+  @Get('dashboard-data')
+  async getDashboardData() {
+    return this.reportsService.getDashboardData();
+  }
+
 }
