@@ -8,6 +8,8 @@ import * as PDFDocument from 'pdfkit';
 import * as ExcelJS from 'exceljs';
 import { Buffer } from 'buffer';
 import { Organization } from 'src/organizations/entities/organization.entity';
+import {  } from 'typeorm';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class ReportsService {
@@ -277,35 +279,63 @@ export class ReportsService {
 
         return buffer;
     }
-    
+
     async getDashboardData(): Promise<any> {
         console.log('Fetching dashboard data with monthly breakdown');
-    
-        // Define the start and end of today
-        const now = new Date();
-        const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-        const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-    
+        
+        // Get the current time in your local time zone (laptop PC time zone)
+        const timezone = moment.tz.guess();  // Detects the local time zone
+        const now = moment().tz(timezone);
+        
+        // Define the start and end of today in the local time zone
+        const startOfToday = now.clone().startOf('day').toDate();
+        const endOfToday = now.clone().endOf('day').toDate();
+        
+        console.log('Timezone:', timezone);
+        console.log('Start of Today:', startOfToday);
+        console.log('End of Today:', endOfToday);
+        
         // Query to fetch expenses for today
         const todayQuery: any = {
-            date: Between(startOfToday.toISOString(), endOfToday.toISOString()),
+            date: Between(startOfToday, endOfToday),
         };
-    
+        
         try {
             // Fetch today's expenses
             const todayExpenses = await this.expenseRepository.find({
                 where: todayQuery,
                 relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
             });
-    
+        
+            console.log('Today Expenses:', todayExpenses);
+        
             let totalTodayAmount = 0;
             const monthlyData = {};
             const categoryTotals = {};
-    
+        
             todayExpenses.forEach(expense => {
                 const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
                 totalTodayAmount += calculatedAmount;
-    
+            });
+        
+            // Fetch all expenses for the graph and category totals
+            const allExpenses = await this.expenseRepository.find({
+                relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
+            });
+        
+            let totalAmount = 0;
+        
+            allExpenses.forEach(expense => {
+                const expenseMonth = moment(expense.date).tz(timezone).format('MMMM YYYY');
+                const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+                totalAmount += calculatedAmount;
+        
+                if (!monthlyData[expenseMonth]) {
+                    monthlyData[expenseMonth] = 0;
+                }
+                monthlyData[expenseMonth] += calculatedAmount;
+        
+                // Update category totals
                 expense.expenseItems.forEach(item => {
                     const categoryName = item.product.category.name;
                     if (!categoryTotals[categoryName]) {
@@ -314,36 +344,17 @@ export class ReportsService {
                     categoryTotals[categoryName] += item.quantity * item.price;
                 });
             });
-    
-            // Fetch all expenses for the graph
-            const allExpenses = await this.expenseRepository.find({
-                relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
-            });
-    
-            let totalAmount = 0;
-    
-            allExpenses.forEach(expense => {
-                const expenseMonth = new Date(expense.date).toLocaleString('default', { month: 'long', year: 'numeric' });
-                const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
-                totalAmount += calculatedAmount;
-    
-                if (!monthlyData[expenseMonth]) {
-                    monthlyData[expenseMonth] = 0;
-                }
-                monthlyData[expenseMonth] += calculatedAmount;
-            });
-    
+        
             return {
                 totalAmount,
                 totalTodayAmount,
                 monthlyData,
-                categoryTotals,
+                categoryTotals,  // Total amount for each category across all expenses
             };
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
             throw new HttpException('Error fetching dashboard data', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
     
 }
