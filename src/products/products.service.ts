@@ -61,7 +61,7 @@ export class ProductsService {
 
 
   // ***********************************************************************************************************************************************
-  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 5): Promise<any> {
+  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 100): Promise<any> {
     const query = this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .select([
