@@ -125,8 +125,8 @@ export class ReportsService {
                     .fillColor('#000000')
                     .text('Date / Category', 52, y, { bold: true })
                     .text('Product', 300, y, { bold: true })
-                    .text('Qty', 450, y, { bold: true })
-                    .text('Unit', 500, y, { bold: true })
+                    .text('Qty', 430, y, { bold: true })
+                    .text('Unit', 480, y, { bold: true })
                     .text('Price (TSH)', 550, y, { bold: true })
                     .text('Amount (TSH)', 650, y, { align: 'right', bold: true });
 
@@ -158,8 +158,8 @@ export class ReportsService {
                     .text(index.toString() + ".", 50, y)
                     .text(item.product.category.name, 60, y)
                     .text(item.product.name, 300, y)
-                    .text(item.quantity.toString(), 450, y)
-                    .text(item.product.unit, 500, y)
+                    .text(item.quantity.toString(), 430, y)
+                    .text(item.product.unit, 480, y)
                     .text(formatAmount(item.price), 550, y)
                     .text(formatAmount(item.quantity * item.price), 650, y, { align: 'right' });
 
