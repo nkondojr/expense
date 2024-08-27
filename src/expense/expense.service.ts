@@ -25,16 +25,16 @@ export class ExpenseService {
   // ***********************************************************************************************************************************************
   async create(createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
     const { date, amount, description, attachment, expenseItems } = createExpenseDto;
-  
+
     if (!expenseItems || expenseItems.length === 0) {
       throw new BadRequestException('Expense items cannot be empty');
     }
-  
+
     const invalidUUIDs = expenseItems.filter(item => !isUUID(item.productId));
     if (invalidUUIDs.length > 0) {
       throw new UnprocessableEntityException(`Invalid ID format for product IDs: ${invalidUUIDs.map(item => item.productId).join(', ')}`);
     }
-  
+
     // Validate product existence for each expense item
     for (const item of expenseItems) {
       const product = await this.productRepository.findOne({ where: { id: item.productId } });
@@ -42,21 +42,21 @@ export class ExpenseService {
         throw new NotFoundException(`Product with id ${item.productId} not found`);
       }
     }
-  
+
     // Handle the attachment
     const imageUrl = attachment ? saveImage(attachment) : null;
-  
+
     const expense = this.expenseRepository.create({
       date,
       amount,
       description,
       attachment: imageUrl,
     });
-  
+
     try {
       // Save the expense
       const savedExpense = await this.expenseRepository.save(expense);
-  
+
       // Create expense items
       const expenseItemsEntities = expenseItems.map(item => {
         const expenseItem = new ExpenseItem();
@@ -66,10 +66,10 @@ export class ExpenseService {
         expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
         return expenseItem;
       });
-  
+
       // Save expense items
       await this.expenseItemsRepository.save(expenseItemsEntities);
-  
+
       return {
         message: 'Expense created successfully',
       };
@@ -83,7 +83,7 @@ export class ExpenseService {
   }
 
   // ***********************************************************************************************************************************************
-  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
+  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 5): Promise<any> {
     const query = this.expenseRepository.createQueryBuilder('expense')
       .select([
         'expense.id',
@@ -96,7 +96,10 @@ export class ExpenseService {
       ]);
 
     if (searchTerm) {
-      query.where('expense.description LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where('expense.description LIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere("TO_CHAR(expense.date, 'DD-MM-YYYY') LIKE :searchTerm", { searchTerm: `%${searchTerm}%` })
+        .orWhere('CAST(expense.amount AS TEXT) LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -125,6 +128,7 @@ export class ExpenseService {
       data: result
     };
   }
+
 
   // ***********************************************************************************************************************************************
   async findOne(id: string): Promise<any> {
@@ -165,8 +169,8 @@ export class ExpenseService {
     return result;
   }
 
-   // ***********************************************************************************************************************************************
-   async update(id: string, updateExpenseDto: UpdateExpenseDto): Promise<{ message: string }> {
+  // ***********************************************************************************************************************************************
+  async update(id: string, updateExpenseDto: UpdateExpenseDto): Promise<{ message: string }> {
     // Validate the ID format
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');

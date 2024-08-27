@@ -21,7 +21,7 @@ export class ProductsController {
   async findAll(
     @Query('search') search: string,
     @Query('page') page: number = 1,
-    @Query('pageSize') pageSize: number = 10,
+    @Query('pageSize') pageSize: number = 5,
   ): Promise<any> {
     return this.productsService.findAll(search, page, pageSize);
   }
