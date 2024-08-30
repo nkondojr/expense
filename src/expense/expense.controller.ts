@@ -4,10 +4,11 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 
-@Controller('expense')
+@Controller('expenses')
 @UseGuards(JwtAuthGuard)
 export class ExpenseController {
   constructor(private readonly expenseService: ExpenseService) { }
+
 
   @Post()
   async create(@Body() createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
