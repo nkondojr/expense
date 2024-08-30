@@ -7,11 +7,8 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.setGlobalPrefix('api')
-
   // Enable CORS
   app.enableCors({
-    // origin: 'http://localhost:3000', // your frontend's origin
     origin: ['http://localhost:3000', 'https://expense.ecu.co.tz'],  // Update with your frontend domain
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
