@@ -3,12 +3,12 @@ import { ReportsService } from './reports.service';
 import * as express from 'express';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 
-@Controller('reports')
+@Controller()
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) { }
 
-  @Post('pdf')
+  @Post('reports/pdf')
   async getPdfReport(
     @Body() payload: { start_date: string; end_date: string; categoryIds: string[] },
     @Res() res: express.Response
@@ -23,7 +23,7 @@ export class ReportsController {
     }
   }
 
-  @Get('excel')
+  @Get('reports/excel')
   async generateExcel(@Res() res: express.Response): Promise<void> {
     const buffer = await this.reportsService.generateExcel();
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
