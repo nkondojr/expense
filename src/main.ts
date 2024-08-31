@@ -8,7 +8,8 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://expense.ecu.co.tz'],  // Update with your frontend domain
+    // origin: ['http://localhost:3000', 'https://expense.ecu.co.tz'],  // Update with your frontend domain
+    origin: 'http://localhost:3000',  // Update with your frontend domain
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -18,6 +19,6 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  await app.listen(5000);
+  await app.listen(5001);
 }
 bootstrap();
