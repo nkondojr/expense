@@ -124,7 +124,7 @@ export class ReportsService {
                     .fontSize(12)
                     .fillColor('#000000')
                     .text('Date / Category', 52, y, { bold: true })
-                    .text('Product', 300, y, { bold: true })
+                    .text('item / Service', 300, y, { bold: true })
                     .text('Qty', 430, y, { bold: true })
                     .text('Unit', 480, y, { bold: true })
                     .text('Price (TSH)', 550, y, { bold: true })
@@ -216,7 +216,7 @@ export class ReportsService {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('EXPENSES');
 
-        const headerRow = worksheet.addRow(['DATE', 'PRODUCT', 'QUANTITY', 'UNIT', 'PRICE', 'AMOUNT']);
+        const headerRow = worksheet.addRow(['DATE', 'ITEM / SERVICE', 'QUANTITY', 'UNIT', 'PRICE', 'AMOUNT']);
 
         headerRow.eachCell((cell) => {
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -269,7 +269,7 @@ export class ReportsService {
         });
 
         worksheet.getColumn(1).width = 15;
-        worksheet.getColumn(2).width = 20;
+        worksheet.getColumn(2).width = 30;
         worksheet.getColumn(3).width = 25;
         worksheet.getColumn(4).width = 15;
         worksheet.getColumn(5).width = 15;
