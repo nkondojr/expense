@@ -73,7 +73,7 @@ export class ReportsService {
 
             // Organization Header
             doc.font('Helvetica-Bold').fontSize(18).fillColor('black').text(organizationName, { align: 'left' });
-            doc.fontSize(16).fillColor('black').text('General Expense Report', { align: 'left' }).moveDown();
+            doc.fontSize(16).fillColor('black').text('Daily Requirements', { align: 'left' }).moveDown();
 
             const formattedStartDate = formatDate(startDateObj);
             const formattedEndDate = formatDate(endDateObj);
@@ -124,7 +124,7 @@ export class ReportsService {
                     .fontSize(12)
                     .fillColor('#000000')
                     .text('Date / Category', 52, y, { bold: true })
-                    .text('item / Service', 300, y, { bold: true })
+                    .text('Product / Service', 300, y, { bold: true })
                     .text('Qty', 430, y, { bold: true })
                     .text('Unit', 480, y, { bold: true })
                     .text('Price (TSH)', 550, y, { bold: true })
@@ -216,7 +216,7 @@ export class ReportsService {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('EXPENSES');
 
-        const headerRow = worksheet.addRow(['DATE', 'ITEM / SERVICE', 'QUANTITY', 'UNIT', 'PRICE', 'AMOUNT']);
+        const headerRow = worksheet.addRow(['DATE', 'PRODUCT / SERVICE', 'QUANTITY', 'UNIT', 'PRICE', 'AMOUNT']);
 
         headerRow.eachCell((cell) => {
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
