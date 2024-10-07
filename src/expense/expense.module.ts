@@ -9,7 +9,7 @@ import { AuthenticationModule } from 'src/authentication/authentication.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Expense, ExpenseItem, Product]),  // Register both Expense and ExpenseItems entities
+    TypeOrmModule.forFeature([Expense, ExpenseItem, Product]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
   providers: [ExpenseService],
