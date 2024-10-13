@@ -99,7 +99,6 @@ export class ExpenseService {
       query.where('expense.description LIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
         .orWhere("TO_CHAR(expense.date, 'DD-MM-YYYY') LIKE :searchTerm", { searchTerm: `%${searchTerm}%` })
         .orWhere('CAST(expense.amount AS TEXT) LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
-
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -171,59 +170,67 @@ export class ExpenseService {
 
   // ***********************************************************************************************************************************************
   async update(id: string, updateExpenseDto: UpdateExpenseDto): Promise<{ message: string }> {
-    // Validate the ID format
-    if (!isUUID(id)) {
-      throw new BadRequestException('Invalid ID format');
-    }
-
+    const { date, amount, description, attachment, expenseItems } = updateExpenseDto;
+  
+    // Find the existing expense
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) {
-      throw new NotFoundException(`Expense with ID ${id} not found`);
+      throw new NotFoundException(`Expense with id ${id} not found`);
     }
-
-    if (updateExpenseDto.expenseItems) {
-      const invalidUUIDs = updateExpenseDto.expenseItems.filter(item => !isUUID(item.productId));
+  
+    // Validate expense items if provided
+    if (expenseItems && expenseItems.length > 0) {
+      const invalidUUIDs = expenseItems.filter(item => !isUUID(item.productId));
       if (invalidUUIDs.length > 0) {
         throw new UnprocessableEntityException(`Invalid ID format for product IDs: ${invalidUUIDs.map(item => item.productId).join(', ')}`);
       }
-
+  
       // Validate product existence for each expense item
-      for (const item of updateExpenseDto.expenseItems) {
+      for (const item of expenseItems) {
         const product = await this.productRepository.findOne({ where: { id: item.productId } });
         if (!product) {
           throw new NotFoundException(`Product with id ${item.productId} not found`);
         }
       }
     }
-
-    if (updateExpenseDto.attachment) {
-      updateExpenseDto.attachment = saveImage(updateExpenseDto.attachment);
+  
+    // Handle the attachment if provided
+    const imageUrl = attachment ? saveImage(attachment) : expense.attachment;
+  
+    // Update expense fields
+    expense.date = date ?? expense.date;
+    expense.amount = amount ?? expense.amount;
+    expense.description = description ?? expense.description;
+    expense.attachment = imageUrl;
+  
+    try {
+      // Save updated expense
+      await this.expenseRepository.save(expense);
+  
+      // Update expense items if provided
+      if (expenseItems && expenseItems.length > 0) {
+        // Delete existing expense items
+        await this.expenseItemsRepository.delete({ expense: { id: expense.id } });
+  
+        // Create and save new expense items
+        const expenseItemsEntities = expenseItems.map(item => {
+          const expenseItem = new ExpenseItem();
+          expenseItem.quantity = item.quantity;
+          expenseItem.price = item.price;
+          expenseItem.expense = expense;
+          expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
+          return expenseItem;
+        });
+        await this.expenseItemsRepository.save(expenseItemsEntities);
+      }
+  
+      return {
+        message: 'Expense updated successfully',
+      };
+    } catch (error) {
+      throw error;
     }
-
-    await this.expenseRepository.update(id, updateExpenseDto);
-
-    if (updateExpenseDto.expenseItems) {
-      // Delete existing expense items
-      await this.expenseItemsRepository.delete({ expense: { id } });
-
-      // Create new expense items
-      const expenseItemsEntities = updateExpenseDto.expenseItems.map(item => {
-        const expenseItem = new ExpenseItem();
-        expenseItem.quantity = item.quantity;
-        expenseItem.price = item.price;
-        expenseItem.expense = { id } as any;
-        expenseItem.product = { id: item.productId } as any; // Assuming product entity is referenced by ID
-        return expenseItem;
-      });
-
-      // Save new expense items
-      await this.expenseItemsRepository.save(expenseItemsEntities);
-    }
-
-    return {
-      message: 'Expense updated successfully',
-    };
-  }
+  }  
 
   // ***********************************************************************************************************************************************
   async remove(id: string): Promise<{ message: string }> {

@@ -125,6 +125,7 @@ export class ProductsService {
       id: product.id,
       name: product.name,
       unit: product.unit,
+      description: product.description,
       created_at: product.created_at,
       updated_at: product.updated_at,
       categoryId: product.category.id,
