@@ -1,4 +1,3 @@
-
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrganizationService } from './organizations.service'; // Fixed import
@@ -10,7 +9,7 @@ import { AuthenticationModule } from 'src/authentication/authentication.module';
   imports: [
     TypeOrmModule.forFeature([Organization]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
-],
+  ],
   providers: [OrganizationService],
   controllers: [OrganizationController],
 })

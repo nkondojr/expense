@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
@@ -12,11 +17,12 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   // ***********************************************************************************************************************************************
   async create(createUserDto: CreateUserDto): Promise<{ message: string }> {
-    const { username, email, mobile, password, confirm_password, is_active } = createUserDto;
+    const { username, email, mobile, password, confirm_password, is_active } =
+      createUserDto;
     // Validate passwords
     if (password !== confirm_password) {
       throw new BadRequestException('Passwords do not match');
@@ -58,12 +64,28 @@ export class UsersService {
   }
 
   // ***********************************************************************************************************************************************
-  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
-    const query = this.userRepository.createQueryBuilder('user')
-      .select(['user.id', 'user.username', 'user.email', 'user.mobile', 'user.is_active', 'user.created_at', 'user.updated_at']);
+  async findAll(
+    searchTerm?: string,
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<any> {
+    const query = this.userRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.username',
+        'user.email',
+        'user.mobile',
+        'user.is_active',
+        'user.created_at',
+        'user.updated_at',
+      ]);
 
     if (searchTerm) {
-      query.where('user.username LIKE :searchTerm OR user.email LIKE :searchTerm OR user.mobile LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where(
+        'user.username ILIKE :searchTerm OR user.email ILIKE :searchTerm OR user.mobile ILIKE :searchTerm',
+        { searchTerm: `%${searchTerm}%` },
+      );
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -73,13 +95,17 @@ export class UsersService {
 
     return {
       links: {
-        next: page < lastPage ? `/users?page=${page + 1}&pageSize=${pageSize}` : null,
-        previous: page > 1 ? `/users?page=${page - 1}&pageSize=${pageSize}` : null
+        next:
+          page < lastPage
+            ? `/users?page=${page + 1}&pageSize=${pageSize}`
+            : null,
+        previous:
+          page > 1 ? `/users?page=${page - 1}&pageSize=${pageSize}` : null,
       },
       count: total,
       lastPage: lastPage,
       currentPage: page,
-      data: data
+      data: data,
     };
   }
 
@@ -99,10 +125,11 @@ export class UsersService {
     return userWithoutPassword;
   }
 
-  
-
   // ***********************************************************************************************************************************************
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<{ message: string; user: Partial<User> }> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<{ message: string; user: Partial<User> }> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
     }
@@ -121,7 +148,9 @@ export class UsersService {
       await this.userRepository.update(id, updateUserDto);
     } catch (error) {
       if (error.code === '23505') {
-        throw new ConflictException('Duplicate value violates unique constraint');
+        throw new ConflictException(
+          'Duplicate value violates unique constraint',
+        );
       } else {
         throw error;
       }
@@ -132,7 +161,7 @@ export class UsersService {
 
     return {
       message: 'User updated successfully',
-      user: userWithoutPassword
+      user: userWithoutPassword,
     };
   }
 

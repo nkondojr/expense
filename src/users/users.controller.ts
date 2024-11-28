@@ -1,4 +1,15 @@
-import { Controller, Get, Param, UseGuards, Query, UsePipes, ValidationPipe, Body, Put, Delete, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Query,
+  UsePipes,
+  ValidationPipe,
+  Body,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -35,5 +46,4 @@ export class UsersController {
     await this.usersService.remove(id);
     return { message: 'User deleted successfully' };
   }
-
 }

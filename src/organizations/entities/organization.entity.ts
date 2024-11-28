@@ -27,6 +27,6 @@ export class Organization {
   @Column({ unique: true, nullable: true })
   website?: string;
 
-  @OneToMany(() => Report, reports => reports.organization)
+  @OneToMany(() => Report, (reports) => reports.organization)
   reports: Report[];
 }

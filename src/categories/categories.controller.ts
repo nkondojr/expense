@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Query, UsePipes, ValidationPipe, Patch, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Query,
+  UsePipes,
+  ValidationPipe,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { User } from 'src/users/entities/user.entity';
@@ -14,7 +26,10 @@ export class CategoriesController {
 
   @Post()
   @UsePipes(new ValidationPipe())
-  async create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user: User) {
+  async create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @GetUser() user: User,
+  ) {
     return this.categoriesService.create(createCategoryDto, user.id);
   }
 
@@ -37,7 +52,7 @@ export class CategoriesController {
   async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.categoriesService.update(id, updateCategoryDto, user.id);
   }

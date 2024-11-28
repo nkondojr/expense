@@ -6,7 +6,10 @@ import { UsersService } from '../../users/users.service';
 import { JwtPayload } from '../jwt-payload.interface';
 
 @Injectable()
-export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refresh-token') {
+export class JwtRefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh-token',
+) {
   private readonly logger = new Logger(JwtRefreshTokenStrategy.name);
 
   constructor(

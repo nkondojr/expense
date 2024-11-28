@@ -1,11 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Headers, UseGuards, UnauthorizedException, ValidationPipe, UsePipes, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Headers,
+  UseGuards,
+  UnauthorizedException,
+  ValidationPipe,
+  UsePipes,
+  Request,
+} from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from 'src/users/entities/user.entity';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtRefreshTokenGuard } from './guards/jwt-refresh-token.guard';
-import { LocalAuthGuard } from './guards/local-auth.guard';
+// import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -36,8 +48,8 @@ export class AuthenticationController {
   @UseGuards(JwtAuthGuard)
   @Patch('change-password')
   async changePassword(
-    @Request() req: any, 
-    @Body() changePasswordDto: ChangePasswordDto
+    @Request() req: any,
+    @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<{ message: string }> {
     const user_id = req.user.id;
     await this.authenticationService.changePassword(user_id, changePasswordDto);
@@ -47,13 +59,19 @@ export class AuthenticationController {
   @UseGuards(JwtRefreshTokenGuard)
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authenticationService.refreshAccessToken(refreshTokenDto.refresh_token);
+    return this.authenticationService.refreshAccessToken(
+      refreshTokenDto.refresh_token,
+    );
   }
 
   @Get('profile')
-  async getProfile(@Headers('Authorization') authorization: string): Promise<Partial<User>> {
+  async getProfile(
+    @Headers('Authorization') authorization: string,
+  ): Promise<Partial<User>> {
     if (!authorization || !authorization.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Authorization header not found or malformed');
+      throw new UnauthorizedException(
+        'Authorization header not found or malformed',
+      );
     }
     const accessToken = authorization.split(' ')[1];
     return await this.authenticationService.getProfile(accessToken);

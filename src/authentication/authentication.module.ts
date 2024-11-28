@@ -37,6 +37,11 @@ import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
     RefreshTokenIdsStorage,
     UsersService,
   ],
-  exports: [AuthenticationService, JwtStrategy, JwtRefreshTokenStrategy, LocalStrategy], // Export providers if used in other modules
+  exports: [
+    AuthenticationService,
+    JwtStrategy,
+    JwtRefreshTokenStrategy,
+    LocalStrategy,
+  ], // Export providers if used in other modules
 })
 export class AuthenticationModule {}

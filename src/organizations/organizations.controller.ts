@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { OrganizationService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -11,7 +23,9 @@ export class OrganizationController {
 
   @Post()
   @UsePipes(new ValidationPipe())
-  async create(@Body() createOrganizationDto: CreateOrganizationDto): Promise<{ message: string }> {
+  async create(
+    @Body() createOrganizationDto: CreateOrganizationDto,
+  ): Promise<{ message: string }> {
     return this.organizationService.create(createOrganizationDto);
   }
 
@@ -33,7 +47,7 @@ export class OrganizationController {
   @UsePipes(new ValidationPipe())
   async update(
     @Param('id') id: string,
-    @Body() updateOrganizationDto: UpdateOrganizationDto
+    @Body() updateOrganizationDto: UpdateOrganizationDto,
   ): Promise<{ message: string }> {
     return this.organizationService.update(id, updateOrganizationDto);
   }

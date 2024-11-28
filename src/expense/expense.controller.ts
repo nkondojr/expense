@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Query, Patch, ValidationPipe, UsePipes, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Query,
+  Patch,
+  ValidationPipe,
+  UsePipes,
+  Delete,
+} from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
@@ -7,11 +19,12 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 @Controller('expenses')
 @UseGuards(JwtAuthGuard)
 export class ExpenseController {
-  constructor(private readonly expenseService: ExpenseService) { }
-
+  constructor(private readonly expenseService: ExpenseService) {}
 
   @Post()
-  async create(@Body() createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
+  async create(
+    @Body() createExpenseDto: CreateExpenseDto,
+  ): Promise<{ message: string }> {
     return this.expenseService.create(createExpenseDto);
   }
 
@@ -31,7 +44,10 @@ export class ExpenseController {
 
   @Patch(':id')
   @UsePipes(new ValidationPipe())
-  async update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto): Promise<{ message: string }> {
+  async update(
+    @Param('id') id: string,
+    @Body() updateExpenseDto: UpdateExpenseDto,
+  ): Promise<{ message: string }> {
     return this.expenseService.update(id, updateExpenseDto);
   }
 

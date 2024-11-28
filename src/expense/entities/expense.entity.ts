@@ -1,7 +1,13 @@
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Report } from 'src/reports/entities/report.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
 
 @Entity()
 export class Expense {
@@ -26,12 +32,12 @@ export class Expense {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 
-  @ManyToOne(() => User, user => user.expenses)
+  @ManyToOne(() => User, (user) => user.expenses)
   createdBy: User;
 
-  @OneToMany(() => Report, reports => reports.expense)
+  @OneToMany(() => Report, (reports) => reports.expense)
   reports: Report[];
 
-  @OneToMany(() => ExpenseItem, expenseItems => expenseItems.expense)
+  @OneToMany(() => ExpenseItem, (expenseItems) => expenseItems.expense)
   expenseItems: ExpenseItem[];
 }

@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
@@ -20,26 +26,35 @@ export class ExpenseService {
 
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) { }
+  ) {}
 
   // ***********************************************************************************************************************************************
-  async create(createExpenseDto: CreateExpenseDto): Promise<{ message: string }> {
-    const { date, amount, description, attachment, expenseItems } = createExpenseDto;
+  async create(
+    createExpenseDto: CreateExpenseDto,
+  ): Promise<{ message: string }> {
+    const { date, amount, description, attachment, expenseItems } =
+      createExpenseDto;
 
     if (!expenseItems || expenseItems.length === 0) {
       throw new BadRequestException('Expense items cannot be empty');
     }
 
-    const invalidUUIDs = expenseItems.filter(item => !isUUID(item.productId));
+    const invalidUUIDs = expenseItems.filter((item) => !isUUID(item.productId));
     if (invalidUUIDs.length > 0) {
-      throw new UnprocessableEntityException(`Invalid ID format for product IDs: ${invalidUUIDs.map(item => item.productId).join(', ')}`);
+      throw new UnprocessableEntityException(
+        `Invalid ID format for product IDs: ${invalidUUIDs.map((item) => item.productId).join(', ')}`,
+      );
     }
 
     // Validate product existence for each expense item
     for (const item of expenseItems) {
-      const product = await this.productRepository.findOne({ where: { id: item.productId } });
+      const product = await this.productRepository.findOne({
+        where: { id: item.productId },
+      });
       if (!product) {
-        throw new NotFoundException(`Product with id ${item.productId} not found`);
+        throw new NotFoundException(
+          `Product with id ${item.productId} not found`,
+        );
       }
     }
 
@@ -58,7 +73,7 @@ export class ExpenseService {
       const savedExpense = await this.expenseRepository.save(expense);
 
       // Create expense items
-      const expenseItemsEntities = expenseItems.map(item => {
+      const expenseItemsEntities = expenseItems.map((item) => {
         const expenseItem = new ExpenseItem();
         expenseItem.quantity = item.quantity;
         expenseItem.price = item.price;
@@ -83,8 +98,13 @@ export class ExpenseService {
   }
 
   // ***********************************************************************************************************************************************
-  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 5): Promise<any> {
-    const query = this.expenseRepository.createQueryBuilder('expense')
+  async findAll(
+    searchTerm?: string,
+    page: number = 1,
+    pageSize: number = 5,
+  ): Promise<any> {
+    const query = this.expenseRepository
+      .createQueryBuilder('expense')
       .select([
         'expense.id',
         'expense.date',
@@ -96,9 +116,16 @@ export class ExpenseService {
       ]);
 
     if (searchTerm) {
-      query.where('expense.description LIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere("TO_CHAR(expense.date, 'DD-MM-YYYY') LIKE :searchTerm", { searchTerm: `%${searchTerm}%` })
-        .orWhere('CAST(expense.amount AS TEXT) LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query
+        .where('expense.description ILIKE :searchTerm', {
+          searchTerm: `%${searchTerm}%`,
+        })
+        .orWhere("TO_CHAR(expense.date, 'DD-MM-YYYY') ILIKE :searchTerm", {
+          searchTerm: `%${searchTerm}%`,
+        })
+        .orWhere('CAST(expense.amount AS TEXT) ILIKE :searchTerm', {
+          searchTerm: `%${searchTerm}%`,
+        });
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -106,7 +133,7 @@ export class ExpenseService {
     const [expenses, total] = await query.getManyAndCount();
     const lastPage = Math.ceil(total / pageSize);
 
-    const result = expenses.map(expense => ({
+    const result = expenses.map((expense) => ({
       id: expense.id,
       date: expense.date,
       amount: expense.amount,
@@ -118,16 +145,19 @@ export class ExpenseService {
 
     return {
       links: {
-        next: page < lastPage ? `/expense?page=${page + 1}&pageSize=${pageSize}` : null,
-        previous: page > 1 ? `/expense?page=${page - 1}&pageSize=${pageSize}` : null
+        next:
+          page < lastPage
+            ? `/expense?page=${page + 1}&pageSize=${pageSize}`
+            : null,
+        previous:
+          page > 1 ? `/expense?page=${page - 1}&pageSize=${pageSize}` : null,
       },
       count: total,
       lastPage: lastPage,
       currentPage: page,
-      data: result
+      data: result,
     };
   }
-
 
   // ***********************************************************************************************************************************************
   async findOne(id: string): Promise<any> {
@@ -138,7 +168,11 @@ export class ExpenseService {
 
     const expense = await this.expenseRepository.findOne({
       where: { id },
-      relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
+      relations: [
+        'expenseItems',
+        'expenseItems.product',
+        'expenseItems.product.category',
+      ],
     });
 
     if (!expense) {
@@ -154,7 +188,7 @@ export class ExpenseService {
       attachment: expense.attachment,
       created_at: expense.created_at,
       updated_at: expense.updated_at,
-      expenseItems: expense.expenseItems.map(item => ({
+      expenseItems: expense.expenseItems.map((item) => ({
         id: item.id,
         quantity: item.quantity,
         price: item.price,
@@ -169,51 +203,65 @@ export class ExpenseService {
   }
 
   // ***********************************************************************************************************************************************
-  async update(id: string, updateExpenseDto: UpdateExpenseDto): Promise<{ message: string }> {
-    const { date, amount, description, attachment, expenseItems } = updateExpenseDto;
-  
+  async update(
+    id: string,
+    updateExpenseDto: UpdateExpenseDto,
+  ): Promise<{ message: string }> {
+    const { date, amount, description, attachment, expenseItems } =
+      updateExpenseDto;
+
     // Find the existing expense
     const expense = await this.expenseRepository.findOne({ where: { id } });
     if (!expense) {
       throw new NotFoundException(`Expense with id ${id} not found`);
     }
-  
+
     // Validate expense items if provided
     if (expenseItems && expenseItems.length > 0) {
-      const invalidUUIDs = expenseItems.filter(item => !isUUID(item.productId));
+      const invalidUUIDs = expenseItems.filter(
+        (item) => !isUUID(item.productId),
+      );
       if (invalidUUIDs.length > 0) {
-        throw new UnprocessableEntityException(`Invalid ID format for product IDs: ${invalidUUIDs.map(item => item.productId).join(', ')}`);
+        throw new UnprocessableEntityException(
+          `Invalid ID format for product IDs: ${invalidUUIDs.map((item) => item.productId).join(', ')}`,
+        );
       }
-  
+
       // Validate product existence for each expense item
       for (const item of expenseItems) {
-        const product = await this.productRepository.findOne({ where: { id: item.productId } });
+        const product = await this.productRepository.findOne({
+          where: { id: item.productId },
+        });
         if (!product) {
-          throw new NotFoundException(`Product with id ${item.productId} not found`);
+          throw new NotFoundException(
+            `Product with id ${item.productId} not found`,
+          );
         }
       }
     }
-  
+
     // Handle the attachment if provided
     const imageUrl = attachment ? saveImage(attachment) : expense.attachment;
-  
+
     // Update expense fields
     expense.date = date ?? expense.date;
     expense.amount = amount ?? expense.amount;
     expense.description = description ?? expense.description;
     expense.attachment = imageUrl;
-  
+
     try {
       // Save updated expense
       await this.expenseRepository.save(expense);
-  
+
       // Update expense items if provided
       if (expenseItems && expenseItems.length > 0) {
         // Delete existing expense items
-        await this.expenseItemsRepository.delete({ expense: { id: expense.id } });
-  
+        await this.expenseItemsRepository.delete({
+          expense: { id: expense.id },
+        });
+
         // Create and save new expense items
-        const expenseItemsEntities = expenseItems.map(item => {
+        const expenseItemsEntities = expenseItems.map((item) => {
           const expenseItem = new ExpenseItem();
           expenseItem.quantity = item.quantity;
           expenseItem.price = item.price;
@@ -223,14 +271,14 @@ export class ExpenseService {
         });
         await this.expenseItemsRepository.save(expenseItemsEntities);
       }
-  
+
       return {
         message: 'Expense updated successfully',
       };
     } catch (error) {
       throw error;
     }
-  }  
+  }
 
   // ***********************************************************************************************************************************************
   async remove(id: string): Promise<{ message: string }> {
@@ -250,5 +298,4 @@ export class ExpenseService {
       message: 'Expense deleted successfully',
     };
   }
-
 }

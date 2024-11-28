@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Category } from 'src/categories/entities/category.entity';
 import { User } from 'src/users/entities/user.entity';
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
@@ -29,12 +35,12 @@ export class Product {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 
-  @ManyToOne(() => User, user => user.products)
+  @ManyToOne(() => User, (user) => user.products)
   user: User;
 
-  @ManyToOne(() => Category, category => category.products)
+  @ManyToOne(() => Category, (category) => category.products)
   category: Category;
 
-  @OneToMany(() => ExpenseItem, expenseItems => expenseItems.product)
+  @OneToMany(() => ExpenseItem, (expenseItems) => expenseItems.product)
   expenseItems: ExpenseItem[];
 }

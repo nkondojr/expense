@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
@@ -16,14 +21,18 @@ export class ProductsService {
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) { }
+  ) {}
 
   // ***********************************************************************************************************************************************
-  async create(createProductDto: CreateProductDto): Promise<{ message: string }> {
+  async create(
+    createProductDto: CreateProductDto,
+  ): Promise<{ message: string }> {
     const { name, unit, description, image, categoryId } = createProductDto;
 
     // Validate that category exists
-    const categoryExists = await this.categoryRepository.findOne({ where: { id: categoryId } });
+    const categoryExists = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+    });
     if (!categoryExists) {
       throw new NotFoundException(`Category with id ${categoryId} not found`);
     }
@@ -59,10 +68,14 @@ export class ProductsService {
     }
   }
 
-
   // ***********************************************************************************************************************************************
-  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 100): Promise<any> {
-    const query = this.productRepository.createQueryBuilder('product')
+  async findAll(
+    searchTerm?: string,
+    page: number = 1,
+    pageSize: number = 100,
+  ): Promise<any> {
+    const query = this.productRepository
+      .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .select([
         'product.id',
@@ -77,7 +90,10 @@ export class ProductsService {
       ]);
 
     if (searchTerm) {
-      query.where('product.name LIKE :searchTerm OR category.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where(
+        'product.name ILIKE :searchTerm OR category.name ILIKE :searchTerm',
+        { searchTerm: `%${searchTerm}%` },
+      );
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -85,7 +101,7 @@ export class ProductsService {
     const [products, total] = await query.getManyAndCount();
     const lastPage = Math.ceil(total / pageSize);
 
-    products.forEach(product => {
+    products.forEach((product) => {
       if (product.category) {
         product['category_name'] = product.category.name;
         delete product.category;
@@ -94,13 +110,17 @@ export class ProductsService {
 
     return {
       links: {
-        next: page < lastPage ? `/products?page=${page + 1}&pageSize=${pageSize}` : null,
-        previous: page > 1 ? `/products?page=${page - 1}&pageSize=${pageSize}` : null
+        next:
+          page < lastPage
+            ? `/products?page=${page + 1}&pageSize=${pageSize}`
+            : null,
+        previous:
+          page > 1 ? `/products?page=${page - 1}&pageSize=${pageSize}` : null,
       },
       count: total,
       lastPage: lastPage,
       currentPage: page,
-      data: products
+      data: products,
     };
   }
 
@@ -136,7 +156,10 @@ export class ProductsService {
   }
 
   // ***********************************************************************************************************************************************
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<{ message: string }> {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<{ message: string }> {
     // Validate the ID format
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
@@ -148,9 +171,13 @@ export class ProductsService {
     }
 
     if (updateProductDto.categoryId) {
-      const categoryExists = await this.categoryRepository.findOne({ where: { id: updateProductDto.categoryId } });
+      const categoryExists = await this.categoryRepository.findOne({
+        where: { id: updateProductDto.categoryId },
+      });
       if (!categoryExists) {
-        throw new NotFoundException(`Category with id ${updateProductDto.categoryId} not found`);
+        throw new NotFoundException(
+          `Category with id ${updateProductDto.categoryId} not found`,
+        );
       }
     }
 

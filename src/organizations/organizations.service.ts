@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -14,8 +19,11 @@ export class OrganizationService {
   ) {}
 
   // ***********************************************************************************************************************************************
-  async create(createOrganizationDto: CreateOrganizationDto): Promise<{ message: string }> {
-    const { name, reg_no, region, address, phone_no, tin_no, website } = createOrganizationDto;
+  async create(
+    createOrganizationDto: CreateOrganizationDto,
+  ): Promise<{ message: string }> {
+    const { name, reg_no, region, address, phone_no, tin_no, website } =
+      createOrganizationDto;
     const organization = new Organization();
     organization.name = name;
     organization.reg_no = reg_no;
@@ -37,8 +45,13 @@ export class OrganizationService {
   }
 
   // ***********************************************************************************************************************************************
-  async findAll(searchTerm?: string, page: number = 1, pageSize: number = 10): Promise<any> {
-    const query = this.organizationRepository.createQueryBuilder('organization')
+  async findAll(
+    searchTerm?: string,
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<any> {
+    const query = this.organizationRepository
+      .createQueryBuilder('organization')
       .select([
         'organization.id',
         'organization.name',
@@ -50,20 +63,28 @@ export class OrganizationService {
         'organization.website',
       ]);
     if (searchTerm) {
-      query.where('organization.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+      query.where('organization.name ILIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
+      });
     }
     query.skip((page - 1) * pageSize).take(pageSize);
     const [organizations, total] = await query.getManyAndCount();
     const lastPage = Math.ceil(total / pageSize);
     return {
       links: {
-        next: page < lastPage ? `/organizations?page=${page + 1}&pageSize=${pageSize}` : null,
-        previous: page > 1 ? `/organizations?page=${page - 1}&pageSize=${pageSize}` : null
+        next:
+          page < lastPage
+            ? `/organizations?page=${page + 1}&pageSize=${pageSize}`
+            : null,
+        previous:
+          page > 1
+            ? `/organizations?page=${page - 1}&pageSize=${pageSize}`
+            : null,
       },
       count: total,
       lastPage: lastPage,
       currentPage: page,
-      data: organizations
+      data: organizations,
     };
   }
 
@@ -90,9 +111,12 @@ export class OrganizationService {
       website: organization.website,
     };
   }
-  
+
   // ***********************************************************************************************************************************************
-  async update(id: string, updateOrganizationDto: UpdateOrganizationDto): Promise<{ message: string }> {
+  async update(
+    id: string,
+    updateOrganizationDto: UpdateOrganizationDto,
+  ): Promise<{ message: string }> {
     if (!isUUID(id)) {
       throw new BadRequestException('Invalid ID format');
     }

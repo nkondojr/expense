@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { RefreshTokenIdsStorage } from './refresh-token-ids-storage';
 import { ConfigService } from '@nestjs/config';
@@ -25,8 +30,8 @@ export class AuthenticationService {
     private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
 
     @InjectRepository(User)
-    private userRepository: Repository<User>
-  ) { }
+    private userRepository: Repository<User>,
+  ) {}
 
   // ***********************************************************************************************************************************************
   async signIn(createAuthenticationDto: CreateAuthenticationDto) {
@@ -63,8 +68,12 @@ export class AuthenticationService {
   }
 
   // ***********************************************************************************************************************************************
-  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<string> {
-    const { old_password, new_password, confirm_new_password } = changePasswordDto;
+  async changePassword(
+    id: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<string> {
+    const { old_password, new_password, confirm_new_password } =
+      changePasswordDto;
     if (new_password !== confirm_new_password) {
       throw new BadRequestException('New passwords do not match');
     }
@@ -100,7 +109,7 @@ export class AuthenticationService {
   async getProfile(accessToken: string): Promise<Partial<User>> {
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken);
-      
+
       // Check if the token is invalidated
       if (await this.isTokenInvalidated(decoded.sub)) {
         throw new UnauthorizedException('Token has been invalidated');
