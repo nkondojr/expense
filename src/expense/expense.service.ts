@@ -100,9 +100,9 @@ export class ExpenseService {
       // Determine the greeting based on the time of day
       const currentHour = new Date().getHours();
       let greeting = 'Good morning';
-      if (currentHour >= 12 && currentHour < 18) {
+      if (currentHour >= 12 && currentHour < 17) {
         greeting = 'Good afternoon';
-      } else if (currentHour >= 18) {
+      } else if (currentHour >= 17) {
         greeting = 'Good evening';
       }
 
@@ -114,10 +114,13 @@ export class ExpenseService {
 
       // Send SMS after transaction
       try {
-        await this.messagingService.sendSms(
-          '255694014889',
-          `${greeting}, Boss at ${organizationName}. The total expense amount ${formattedAmount}. https://expense.ecu.co.tz/`,
-        );
+      const smsContent = `${greeting},
+  
+This is to inform you that a purchase has been made at ${organizationName}. The total expense amount is ${formattedAmount}.
+  
+For further details, please refer to the link: https://expense.ecu.co.tz/.`;
+
+        await this.messagingService.sendSms('255789370787', smsContent);
       } catch (smsError) {
         console.error('Error sending SMS:', smsError.response?.data || smsError.text);
       }
