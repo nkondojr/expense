@@ -14,6 +14,8 @@ import { saveImage } from 'utils/image.utils';
 import { isUUID } from 'class-validator';
 import { Product } from 'src/products/entities/product.entity';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { MessagingService } from 'utils/messaging.service';
+import { Organization } from 'src/organizations/entities/organization.entity';
 
 @Injectable()
 export class ExpenseService {
@@ -26,7 +28,13 @@ export class ExpenseService {
 
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>,
+
+    private readonly messagingService: MessagingService, // Add MessagingService here
+
+  ) { }
 
   // ***********************************************************************************************************************************************
   async create(
@@ -85,6 +93,35 @@ export class ExpenseService {
       // Save expense items
       await this.expenseItemsRepository.save(expenseItemsEntities);
 
+      const organization = await this.organizationRepository.find();
+      const organizationName = organization.length > 0 ? organization[0].name : 'Unknown Organization';
+
+
+      // Determine the greeting based on the time of day
+      const currentHour = new Date().getHours();
+      let greeting = 'Good morning';
+      if (currentHour >= 12 && currentHour < 18) {
+        greeting = 'Good afternoon';
+      } else if (currentHour >= 18) {
+        greeting = 'Good evening';
+      }
+
+      // Format the amount with comma separators
+      const formattedAmount = new Intl.NumberFormat('en-TZ', {
+        style: 'currency',
+        currency: 'TZS',
+      }).format(amount);
+
+      // Send SMS after transaction
+      try {
+        await this.messagingService.sendSms(
+          '255694014889',
+          `${greeting}, Boss at ${organizationName}. The total expense amount ${formattedAmount}. https://expense.ecu.co.tz/`,
+        );
+      } catch (smsError) {
+        console.error('Error sending SMS:', smsError.response?.data || smsError.text);
+      }
+
       return {
         message: 'Expense created successfully',
       };
@@ -96,6 +133,7 @@ export class ExpenseService {
       }
     }
   }
+
 
   // ***********************************************************************************************************************************************
   async findAll(

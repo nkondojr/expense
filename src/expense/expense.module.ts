@@ -6,13 +6,15 @@ import { Expense } from './entities/expense.entity';
 import { ExpenseItem } from 'src/expense_items/entities/expense_item.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
+import { MessagingService } from 'utils/messaging.service';
+import { Organization } from 'src/organizations/entities/organization.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Expense, ExpenseItem, Product]),
+    TypeOrmModule.forFeature([Expense, ExpenseItem, Product, Organization]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
-  providers: [ExpenseService],
+  providers: [ExpenseService, MessagingService],
   controllers: [ExpenseController],
 })
 export class ExpenseModule {}
