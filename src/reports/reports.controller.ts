@@ -32,8 +32,8 @@ export class ReportsController {
   }
 
   @Get('dashboard-data')
-  async getDashboardData() {
-    return this.reportsService.getDashboardData();
+  async getDashboardData(@Query('year') year?: number): Promise<any> {
+    return await this.reportsService.getDashboardData(year);
   }
 
 }

@@ -8,7 +8,7 @@ import * as PDFDocument from 'pdfkit';
 import * as ExcelJS from 'exceljs';
 import { Buffer } from 'buffer';
 import { Organization } from 'src/organizations/entities/organization.entity';
-import {  } from 'typeorm';
+import { } from 'typeorm';
 import * as moment from 'moment-timezone';
 
 @Injectable()
@@ -35,8 +35,8 @@ export class ReportsService {
             mkdirSync(reportsDir);
         }
     }
-    
-    
+
+
 
     async generatePdfReport(start_date: string, end_date: string, categoryIds: string[]): Promise<string> {
         this.ensureReportsDirectoryExists();
@@ -280,61 +280,70 @@ export class ReportsService {
         return buffer;
     }
 
-    async getDashboardData(): Promise<any> {
+    async getDashboardData(year?: number): Promise<any> {
         console.log('Fetching dashboard data with monthly breakdown');
-        
+
         // Get the current time in your local time zone (laptop PC time zone)
         const timezone = moment.tz.guess();  // Detects the local time zone
         const now = moment().tz(timezone);
-        
+
+        // Use the provided year or default to the current year
+        const filterYear = year || now.year();
+        const startOfYear = moment.tz(`${filterYear}-01-01T00:00:00`, timezone).toDate();
+        const endOfYear = moment.tz(`${filterYear}-12-31T23:59:59`, timezone).toDate();
+
+        console.log('Timezone:', timezone);
+        console.log('Year Filter:', filterYear);
+        console.log('Start of Year:', startOfYear);
+        console.log('End of Year:', endOfYear);
+
         // Define the start and end of today in the local time zone
         const startOfToday = now.clone().startOf('day').toDate();
         const endOfToday = now.clone().endOf('day').toDate();
-        
-        console.log('Timezone:', timezone);
-        console.log('Start of Today:', startOfToday);
-        console.log('End of Today:', endOfToday);
-        
-        // Query to fetch expenses for today
-        const todayQuery: any = {
-            date: Between(startOfToday, endOfToday),
-        };
-        
+
         try {
             // Fetch today's expenses
             const todayExpenses = await this.expenseRepository.find({
-                where: todayQuery,
+                where: {
+                    date: Between(startOfToday, endOfToday),
+                },
                 relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
             });
-        
+
             console.log('Today Expenses:', todayExpenses);
-        
+
             let totalTodayAmount = 0;
             const monthlyData = {};
             const categoryTotals = {};
-        
+            const months = moment.months(); // Get an array of month names (e.g., ["January", "February", ...])
+            months.forEach((month, index) => {
+                const monthYear = `${month} ${filterYear}`;
+                monthlyData[monthYear] = 0;
+            });
+
             todayExpenses.forEach(expense => {
                 const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
                 totalTodayAmount += calculatedAmount;
             });
-        
-            // Fetch all expenses for the graph and category totals
+
+            // Fetch all expenses for the specified year
             const allExpenses = await this.expenseRepository.find({
+                where: {
+                    date: Between(startOfYear, endOfYear),
+                },
                 relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
             });
-        
+
             let totalAmount = 0;
-        
+
             allExpenses.forEach(expense => {
                 const expenseMonth = moment(expense.date).tz(timezone).format('MMMM YYYY');
                 const calculatedAmount = expense.expenseItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
                 totalAmount += calculatedAmount;
-        
-                if (!monthlyData[expenseMonth]) {
-                    monthlyData[expenseMonth] = 0;
-                }
+
+                // Add amount to the corresponding month
                 monthlyData[expenseMonth] += calculatedAmount;
-        
+
                 // Update category totals
                 expense.expenseItems.forEach(item => {
                     const categoryName = item.product.category.name;
@@ -344,11 +353,11 @@ export class ReportsService {
                     categoryTotals[categoryName] += item.quantity * item.price;
                 });
             });
-        
+
             return {
                 totalAmount,
                 totalTodayAmount,
-                monthlyData,
+                monthlyData, // Includes all months of the year with zeroes for months without expenses
                 categoryTotals,  // Total amount for each category across all expenses
             };
         } catch (error) {
@@ -356,5 +365,5 @@ export class ReportsService {
             throw new HttpException('Error fetching dashboard data', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
 }

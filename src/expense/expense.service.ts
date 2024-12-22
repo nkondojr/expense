@@ -114,13 +114,13 @@ export class ExpenseService {
 
       // Send SMS after transaction
       try {
-      const smsContent = `${greeting},
-  
+        const smsContent = `${greeting},
+
 This is to inform you that a purchase has been made at ${organizationName}. The total expense amount is ${formattedAmount}.
-  
+
 For further details, please refer to the link: https://expense.ecu.co.tz/.`;
 
-        await this.messagingService.sendSms('255789370787', smsContent);
+        await this.messagingService.sendSms('255718352944', smsContent);
       } catch (smsError) {
         console.error('Error sending SMS:', smsError.response?.data || smsError.text);
       }
