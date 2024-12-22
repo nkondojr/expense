@@ -67,7 +67,7 @@ export class ReportsService {
 
             const doc = new PDFDocument({ layout: 'landscape', margin: 50 });
             // const filePath = join(__dirname, '..', 'reports', 'expense-report.pdf');
-            const filePath = join(__dirname, '..', '..', 'reports', 'expense-report.pdf');
+            const filePath = join(__dirname, '..', '..', '..', '..', 'expense-report.pdf');
 
             doc.pipe(createWriteStream(filePath));
 
@@ -124,7 +124,7 @@ export class ReportsService {
                     .fontSize(12)
                     .fillColor('#000000')
                     .text('Date / Category', 52, y, { bold: true })
-                    .text('Product / Service', 300, y, { bold: true })
+                    .text('Product / Service', 230, y, { bold: true })
                     .text('Qty', 430, y, { bold: true })
                     .text('Unit', 480, y, { bold: true })
                     .text('Price (TSH)', 550, y, { bold: true })
@@ -157,7 +157,7 @@ export class ReportsService {
                     .fontSize(10)
                     .text(index.toString() + ".", 50, y)
                     .text(item.product.category.name, 60, y)
-                    .text(item.product.name, 300, y)
+                    .text(item.product.name, 230, y)
                     .text(item.quantity.toString(), 430, y)
                     .text(item.product.unit, 480, y)
                     .text(formatAmount(item.price), 550, y)
