@@ -76,7 +76,7 @@ const contacts = [
     { mobile: '255713951999', name: 'Winnie' },
     { mobile: '255697931196', name: 'Zaudati' },
     { mobile: '255626602200', name: 'Witty' },
-    { mobile: '255785701768', name: 'Mbeke' },
+    { mobile: '255785701768', name: 'Gabriel' },
     { mobile: '255625395553', name: 'Nyelu' },
     { mobile: '255627229912', name: 'Kassim' },
     { mobile: '255621555169', name: 'Pedro' },
