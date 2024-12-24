@@ -73,7 +73,7 @@ export class MessagingService {
 const messagingService = new MessagingService();
 
 const mobileNumbers = [
-    '255748867304',
+    '255748867304', //Rinward
     '255713951999', //Winnie
     '255697931196', //Zaudati
     '255626602200', //Witty
@@ -81,6 +81,10 @@ const mobileNumbers = [
     '255625395553', //Nyelu
     '255627229912', //Kassim
     '255621555169', //Pedro
+    '255718352944', //Salum
+    '255742073002', //Macheyeki
+    '255623344513', //Mtweve
+    '255768897274', //George
     // Add more numbers as needed
 ];
 
@@ -88,11 +92,11 @@ const message = `Expense Management System
 
 From Qela Technologies (T) Ltd:
 
-Merry Christmas and Happy New Year 2025! Enjoy your day, and we wish you all the best in your future endeavors and prosperity.
+Merry Christmas & Happy New Year 2025! Enjoy your day, and we wish you all the best in your future endeavors & prosperity.
 `;
 
 // Set the desired time to send the SMS
-const targetTime = new Date('2024-12-25T00:00:00'); // Midnight on Christmas
+const targetTime = new Date('2024-12-25T03:30:00'); // Midnight on Christmas
 
 const now = new Date();
 const timeDifference = targetTime.getTime() - now.getTime();
