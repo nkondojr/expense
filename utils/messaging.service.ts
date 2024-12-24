@@ -80,6 +80,7 @@ const mobileNumbers = [
     '255785701768', //Mbeke
     '255625395553', //Nyelu
     '255627229912', //Kassim
+    '255621555169', //Pedro
     // Add more numbers as needed
 ];
 
