@@ -50,4 +50,62 @@ export class MessagingService {
     }
 }
 
+    async sendBulkSms(numbers: string[], text: string): Promise<void> {
+        const errors = [];
+        for (const number of numbers) {
+            try {
+                await this.sendSms(number, text);
+            } catch (error) {
+                errors.push({ number, error: error.message });
+            }
+        }
+        if (errors.length) {
+            console.error('Errors sending bulk SMS:', errors);
+            throw new InternalServerErrorException(
+                'Failed to send SMS to some recipients. Check logs for details.',
+            );
+        }
+        console.log('Bulk SMS sent successfully');
+    }
+}
+
+
+const messagingService = new MessagingService();
+
+const mobileNumbers = [
+    '255748867304',
+    '255713951999', //Winnie
+    '255697931196', //Zaudati
+    '255626602200', //Witty
+    '255785701768', //Mbeke
+    '255625395553', //Nyelu
+    '255627229912', //Kassim
+    // Add more numbers as needed
+];
+
+const message = `Expense Management System
+
+From Qela Technologies (T) Ltd:
+
+Merry Christmas and Happy New Year 2025! Enjoy your day, and we wish you all the best in your future endeavors and prosperity.
+`;
+
+// Set the desired time to send the SMS
+const targetTime = new Date('2024-12-25T00:00:00'); // Midnight on Christmas
+
+const now = new Date();
+const timeDifference = targetTime.getTime() - now.getTime();
+
+if (timeDifference > 0) {
+    console.log(
+        `SMS scheduled to be sent at ${targetTime.toISOString()} (${targetTime.toLocaleString()})`,
+    );
+    setTimeout(() => {
+        messagingService
+            .sendBulkSms(mobileNumbers, message)
+            .then(() => console.log('All SMS sent successfully'))
+            .catch((error) => console.error('Error sending bulk SMS:', error.message));
+    }, timeDifference);
+} else {
+    console.error('The specified time has already passed.');
 }
