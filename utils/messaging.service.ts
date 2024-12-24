@@ -69,35 +69,28 @@ export class MessagingService {
     }
 }
 
-
 const messagingService = new MessagingService();
 
-const mobileNumbers = [
-    '255748867304', //Rinward
-    '255713951999', //Winnie
-    '255697931196', //Zaudati
-    '255626602200', //Witty
-    '255785701768', //Mbeke
-    '255625395553', //Nyelu
-    '255627229912', //Kassim
-    '255621555169', //Pedro
-    '255718352944', //Salum
-    '255742073002', //Macheyeki
-    '255623344513', //Mtweve
-    '255768897274', //George
-    // Add more numbers as needed
+const contacts = [
+    { mobile: '255748867304', name: 'Rinward' },
+    { mobile: '255713951999', name: 'Winnie' },
+    { mobile: '255697931196', name: 'Zaudati' },
+    { mobile: '255626602200', name: 'Witty' },
+    { mobile: '255785701768', name: 'Mbeke' },
+    { mobile: '255625395553', name: 'Nyelu' },
+    { mobile: '255627229912', name: 'Kassim' },
+    { mobile: '255621555169', name: 'Pedro' },
+    { mobile: '255718352944', name: 'Salum' },
+    { mobile: '255742073002', name: 'Macheyeki' },
+    { mobile: '255623344513', name: 'Meshack' },
+    { mobile: '255768897274', name: 'George' },
+    // Add more contacts as needed
 ];
 
-const message = `Expense Management System
-
-From Qela Technologies (T) Ltd:
-
-Merry Christmas & Happy New Year 2025! Enjoy your day, and we wish you all the best in your future endeavors & prosperity.
-`;
+const baseMessage = `Expense Management System\n\nFrom Qela Technologies (T) Ltd:\n\nMerry Christmas & Happy New Year 2025! Enjoy your day {name}, and we wish you all the best in your future endeavors & prosperity.`;
 
 // Set the desired time to send the SMS
 const targetTime = new Date('2024-12-25T03:30:00'); // Midnight on Christmas
-
 const now = new Date();
 const timeDifference = targetTime.getTime() - now.getTime();
 
@@ -106,8 +99,12 @@ if (timeDifference > 0) {
         `SMS scheduled to be sent at ${targetTime.toISOString()} (${targetTime.toLocaleString()})`,
     );
     setTimeout(() => {
-        messagingService
-            .sendBulkSms(mobileNumbers, message)
+        const promises = contacts.map(({ mobile, name }) => {
+            const personalizedMessage = baseMessage.replace('{name}', name);
+            return messagingService.sendSms(mobile, personalizedMessage);
+        });
+
+        Promise.all(promises)
             .then(() => console.log('All SMS sent successfully'))
             .catch((error) => console.error('Error sending bulk SMS:', error.message));
     }, timeDifference);
