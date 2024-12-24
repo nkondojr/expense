@@ -87,7 +87,7 @@ const contacts = [
     // Add more contacts as needed
 ];
 
-const baseMessage = `Expense Management System\n\nFrom Qela Technologies (T) Ltd:\n\nMerry Christmas & Happy New Year 2025! Enjoy your day {name}, and we wish you all the best in your future endeavors & prosperity.`;
+const baseMessage = `Expense Management System\n\nFrom Qela Technologies (T) Ltd:\n\nMerry Christmas & Happy New Year 2025! Enjoy your day, {name}, and we wish you all the best in your future endeavors & prosperity.`;
 
 // Set the desired time to send the SMS
 const targetTime = new Date('2024-12-25T03:30:00'); // Midnight on Christmas
