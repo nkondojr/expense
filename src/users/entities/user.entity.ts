@@ -1,8 +1,9 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { Category } from "src/categories/entities/category.entity";
 import { Product } from "src/products/entities/product.entity";
 import { Expense } from "src/expense/entities/expense.entity";
+import { Employee } from "src/hr-payroll/entities/employees/employees.entity";
 
 @Entity()
 export class User {
@@ -38,6 +39,11 @@ export class User {
 
     @OneToMany(() => Expense, expense => expense.createdBy)
     expenses: Expense[];
+
+    @OneToOne(() => Employee, (employee) => employee.user, {
+        cascade: true,
+    })
+    employeeInfo: Employee;
 
     async validatePassword(password: string): Promise<boolean> {
         return bcrypt.compare(password, this.password);

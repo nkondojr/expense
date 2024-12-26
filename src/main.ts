@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { FinancialYearService } from './seeders/financial-year.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -18,6 +19,10 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
     prefix: '/uploads/',
   });
+
+  // Retrieve the FinancialYearService and run the seeder
+  const financialYearService = app.get(FinancialYearService);
+  await financialYearService.seed();
 
   await app.listen(5000);
 }

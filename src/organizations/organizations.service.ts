@@ -10,13 +10,19 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { isUUID } from 'class-validator';
 import { Organization } from './entities/organization.entity';
+import { buildPaginationResponse } from 'utils/pagination.utils';
+import { SearchParams } from 'utils/search-parms.util';
+import { FinancialYear } from './entities/financial-years/financial-year.entity';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationRepository: Repository<Organization>,
-  ) {}
+
+    @InjectRepository(FinancialYear)
+    private readonly financialYearRepository: Repository<FinancialYear>,
+  ) { }
 
   // ***********************************************************************************************************************************************
   async create(
@@ -86,6 +92,43 @@ export class OrganizationService {
       currentPage: page,
       data: organizations,
     };
+  }
+
+  // ***********************************************************************************************************************************************
+  async findAllFinancialYear(searchParams: SearchParams): Promise<any> {
+    const { searchTerm, page, pageSize } = searchParams;
+
+    const currentYear = new Date().getFullYear();
+    const financialYearName = `FY${currentYear}`;
+
+    await this.financialYearRepository.update(
+      {
+        name: financialYearName,
+      },
+      { isClosed: false },
+    );
+
+    const query = this.financialYearRepository
+      .createQueryBuilder('years')
+      .select(['years']);
+
+    if (searchTerm) {
+      query.where('(years.name ILIKE :searchTerm)', {
+        searchTerm: `%${searchTerm}%`,
+      });
+    }
+
+    query.skip((page - 1) * pageSize).take(pageSize);
+
+    const [financialYears, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(
+      financialYears,
+      total,
+      page,
+      pageSize,
+      '/financial-years',
+    );
   }
 
   // ***********************************************************************************************************************************************

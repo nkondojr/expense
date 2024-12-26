@@ -21,6 +21,23 @@ import { OrganizationModule } from './organizations/organizations.module'; // Ad
 import { Organization } from './organizations/entities/organization.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { HrPayrollModule } from './hr-payroll/hr-payroll.module';
+import { Employee } from './hr-payroll/entities/employees/employees.entity';
+import { EmployeeContract } from './hr-payroll/entities/employees/contracts.entity';
+import { EmployeeAllocation } from './hr-payroll/entities/employees/allocations.entity';
+import { EmployeeWorkHistory } from './hr-payroll/entities/employees/work-histories.entity';
+import { EmployeeNextOfKin } from './hr-payroll/entities/employees/next-of-kins.entity';
+import { EmployeeQualification } from './hr-payroll/entities/employees/qualifications.entity';
+import { Payroll } from './hr-payroll/entities/payroll/payrolls.entity';
+import { PayrollItem } from './hr-payroll/entities/payroll/payroll-items.entity';
+import { Compensation } from './hr-payroll/entities/payroll/generals.entity';
+import { PayrollCompensation } from './hr-payroll/entities/payroll/general-deductions.entity';
+import { EmployeeCompensation } from './hr-payroll/entities/payroll/individials.entity';
+import { EmployeePayrollCompensation } from './hr-payroll/entities/payroll/individual-deductions.entity';
+import { PayrollAccount } from './hr-payroll/entities/payroll/payroll-accounts.entity';
+import { EmployeeBank } from './hr-payroll/entities/employees/banks.entity';
+import { EmployeeReferee } from './hr-payroll/entities/employees/referees.entity';
+import { FinancialYear } from './organizations/entities/financial-years/financial-year.entity';
 
 @Module({
   imports: [
@@ -36,7 +53,31 @@ import { join } from 'path';
         username: ConfigService.get('DB_USERNAME'),
         password: ConfigService.get('DB_PASSWORD'),
         database: ConfigService.get('DB_NAME'),
-        entities: [User, Category, Product, Expense, ExpenseItem, Report, Organization],
+        entities: [
+          User,
+          Category,
+          Product,
+          Expense,
+          ExpenseItem,
+          Report,
+          Organization,
+          Employee,
+          EmployeeContract,
+          EmployeeAllocation,
+          EmployeeBank,
+          EmployeeWorkHistory,
+          EmployeeNextOfKin,
+          EmployeeQualification,
+          EmployeeReferee,
+          Payroll,
+          PayrollItem,
+          Compensation,
+          PayrollCompensation,
+          EmployeeCompensation,
+          EmployeePayrollCompensation,
+          PayrollAccount,
+          FinancialYear
+        ],
         // entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         // do NOT use synchronize: true in real projects
         synchronize: true,
@@ -50,7 +91,8 @@ import { join } from 'path';
     ExpenseModule,
     ExpenseItemsModule,
     ReportsModule,
-    OrganizationModule],
+    OrganizationModule,
+    HrPayrollModule],
   controllers: [AppController],
   providers: [AppService],
 })
