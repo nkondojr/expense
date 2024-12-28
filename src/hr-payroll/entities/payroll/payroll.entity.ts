@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, OneToOne, JoinColumn, Index, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, JoinColumn, Index } from 'typeorm';
 import { Employee } from '../employees/employees.entity';
 import { User } from 'src/users/entities/user.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
