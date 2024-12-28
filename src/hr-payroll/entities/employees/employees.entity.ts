@@ -130,9 +130,6 @@ export class Employee {
     @Column({ type: 'varchar', length: 255, nullable: true })
     attachment: string; // File path, handle file uploads separately
 
-    @Column({ type: 'boolean', default: true })
-    isActive: boolean;
-
     @ManyToOne(() => User, {
         nullable: true,
         onDelete: 'SET NULL'
@@ -150,6 +147,9 @@ export class Employee {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
 
     @OneToMany(() => EmployeeReferee, referees => referees.employee)
     referees: EmployeeReferee[];

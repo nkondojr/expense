@@ -28,7 +28,7 @@ import { EmployeeAllocation } from './hr-payroll/entities/employees/allocations.
 import { EmployeeWorkHistory } from './hr-payroll/entities/employees/work-histories.entity';
 import { EmployeeNextOfKin } from './hr-payroll/entities/employees/next-of-kins.entity';
 import { EmployeeQualification } from './hr-payroll/entities/employees/qualifications.entity';
-import { Payroll } from './hr-payroll/entities/payroll/payrolls.entity';
+import { Payroll } from './hr-payroll/entities/payroll/payroll.entity';
 import { PayrollItem } from './hr-payroll/entities/payroll/payroll-items.entity';
 import { Compensation } from './hr-payroll/entities/payroll/generals.entity';
 import { PayrollCompensation } from './hr-payroll/entities/payroll/general-deductions.entity';

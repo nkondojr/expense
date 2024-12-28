@@ -2,7 +2,6 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTabl
 import { Employee } from '../employees/employees.entity';
 import { User } from 'src/users/entities/user.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
-import { PayrollItem } from './payroll-items.entity';
 
 @Entity('hr_payroll')
 @Index('payroll_status_index', ['status'])
@@ -19,9 +18,6 @@ export class Payroll {
     @JoinColumn({ name: 'financial_year_id' })
     financialYear: FinancialYear; // Foreign key to FinancialYear entity
 
-    @Column({ length: 20, enum: ['Initialized', 'Approved', 'Paid'], default: 'Initialized' })
-    status: 'Initialized' | 'Approved' | 'Paid'; // Payroll status
-
     @ManyToMany(() => Employee)
     @JoinTable({
         name: 'payroll_employees', // Many-to-many relation table
@@ -35,6 +31,9 @@ export class Payroll {
 
     @Column('decimal', { precision: 20, scale: 4, default: 0 })
     totalCost: string; // Total cost of payroll
+
+    @Column({ length: 20, enum: ['Initialized', 'Approved', 'Paid'], default: 'Initialized' })
+    status: 'Initialized' | 'Approved' | 'Paid'; // Payroll status
 
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'created_by_id' })

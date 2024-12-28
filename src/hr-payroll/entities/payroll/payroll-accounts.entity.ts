@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn, Index } from 'typeorm';
 import { Compensation } from './generals.entity';
 import { EmployeeCompensation } from './individials.entity';
-import { Payroll } from './payrolls.entity';
+import { Payroll } from './payroll.entity';
 
 @Entity('hr_payroll_account')
 @Index('compensation_account_index', ['generalCompensation', 'individualCompensation']) // Optional: Index for generalCompensation and individualCompensation fields

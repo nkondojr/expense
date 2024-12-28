@@ -1,4 +1,4 @@
-import { Payroll } from 'src/hr-payroll/entities/payroll/payrolls.entity';
+import { Payroll } from 'src/hr-payroll/entities/payroll/payroll.entity';
 import {
   Entity,
   Column,

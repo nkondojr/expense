@@ -30,13 +30,6 @@ export class EmployeeReferee {
     @Column({ type: 'varchar', length: 12 })
     mobile: string;
 
-    // @Column({
-    //     type: 'enum',
-    //     enum: EmployeeTitle,
-    //     nullable: false
-    // })
-    // title: EmployeeTitle;
-
     @Column({
         type: 'enum',
         enum: ['Mr', 'Mrs', 'Ms', 'Prof', 'Dr', 'Miss'],

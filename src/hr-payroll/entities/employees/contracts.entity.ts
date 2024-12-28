@@ -32,9 +32,6 @@ export class EmployeeContract {
     })
     endOfContractReason: string;
 
-    @Column({ type: 'boolean', default: true })
-    isActive: boolean;
-
     @Column({ type: 'varchar', length: 255, nullable: true })
     attachment: string;
 
@@ -55,4 +52,7 @@ export class EmployeeContract {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
 }

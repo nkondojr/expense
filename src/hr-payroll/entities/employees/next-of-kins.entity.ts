@@ -25,7 +25,7 @@ export class EmployeeNextOfKin {
     name: string;
 
     @Column({ type: 'varchar', length: 50 })
-    relationship: string;
+    relationShip: string;
 
     @Column({ type: 'varchar', length: 12 })
     mobile: string;

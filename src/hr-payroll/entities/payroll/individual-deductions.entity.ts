@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
-import { Payroll } from './payrolls.entity';
+import { Payroll } from './payroll.entity';
 import { EmployeeCompensation } from './individials.entity';
 
 @Entity('hr_payroll_individual_deduction')

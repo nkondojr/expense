@@ -1,11 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Employee } from '../employees/employees.entity';
 import { User } from 'src/users/entities/user.entity';
+import { CalculatedFrom, CompensationNature } from './generals.entity';
 
 @Entity('hr_payroll_individual')
-// @Index('employee_index', ['employee']) // Index for employee field
 export class EmployeeCompensation {
-    
+
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key
 
@@ -15,6 +15,7 @@ export class EmployeeCompensation {
     @Column({ length: 100, unique: true })
     name: string; // Compensation name
 
+    @Index()
     @ManyToOne(() => Employee, employee => employee.employee_individual_compensations)
     @JoinColumn({ name: 'employee_id' })
     employee: Employee; // Foreign key to Employee entity
@@ -31,11 +32,11 @@ export class EmployeeCompensation {
     @Column({ length: 50, enum: ['Employee Deduction', 'Employee Earning'] })
     type: 'Employee Deduction' | 'Employee Earning'; // Type of compensation
 
-    // @Column({ length: 50, enum: Compensation.Nature, nullable: true })
-    // nature: string; // Nature of the compensation
+    @Column({ type: 'enum', enum: CompensationNature })
+    nature: CompensationNature;
 
-    // @Column({ length: 50, enum: Compensation.CalculatedFrom, nullable: true })
-    // calculateFrom: string; // Calculation method for the compensation
+    @Column({ type: 'enum', enum: CalculatedFrom })
+    calculateFrom: CalculatedFrom;
 
     @Column({ default: true })
     isActive: boolean; // Whether the compensation is active

@@ -1,15 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { HrPayrollService } from '../services/employees.service';
-import { CreateHrPayrollDto } from '../dto/create-employee.dto';
-import { UpdateHrPayrollDto } from '../dto/update-employee.dto';
+import { EmployeeService } from '../services/employees.service';
+import { CreateEmployeeDto } from '../dto/employees/create-employee.dto';
+import { UpdateEmployeeDto } from '../dto/employees/update-employee.dto';
 
 @Controller('hr-payroll')
-export class HrPayrollController {
-  constructor(private readonly hrPayrollService: HrPayrollService) {}
+export class EmployeeController {
+  constructor(private readonly hrPayrollService: EmployeeService) {}
 
   @Post()
-  create(@Body() createHrPayrollDto: CreateHrPayrollDto) {
-    return this.hrPayrollService.create(createHrPayrollDto);
+  create(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return this.hrPayrollService.create(createEmployeeDto);
   }
 
   @Get()
@@ -23,8 +23,8 @@ export class HrPayrollController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHrPayrollDto: UpdateHrPayrollDto) {
-    return this.hrPayrollService.update(+id, updateHrPayrollDto);
+  update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
+    return this.hrPayrollService.update(+id, updateEmployeeDto);
   }
 
   @Delete(':id')

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
-import { Payroll } from './payrolls.entity';
+import { Payroll } from './payroll.entity';
 import { Compensation } from './generals.entity';
 import { Employee } from '../employees/employees.entity';
 
