@@ -175,9 +175,6 @@ export class Employee {
     @OneToMany(() => EmployeeCompensation, employee_individual_compensations => employee_individual_compensations.employee)
     employee_individual_compensations: EmployeeCompensation[];
 
-    // @OneToMany(() => PayrollItem, payrollItems => payrollItems.employee)
-    // payrollItems: [];
-
     // getFullName(): string {
     //     return `${this.user.firstName} ${this.user.middleName || ''} ${this.user.lastName}`.trim();
     // }

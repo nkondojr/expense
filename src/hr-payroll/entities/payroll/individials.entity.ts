@@ -19,8 +19,8 @@ export class EmployeeCompensation {
     @JoinColumn({ name: 'employee_id' })
     employee: Employee; // Foreign key to Employee entity
 
-    @Column('decimal', { precision: 10, scale: 2 })
-    value: number; // Compensation value
+    @Column('decimal', { precision: 10, scale: 4 })
+    value: string; // Compensation value
 
     @Column('date')
     effectiveDate: string; // Effective date of the compensation

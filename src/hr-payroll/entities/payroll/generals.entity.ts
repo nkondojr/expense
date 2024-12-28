@@ -54,8 +54,8 @@ export class Compensation {
     @Column({ type: 'enum', enum: CompensationNature })
     nature: CompensationNature;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    value: number;
+    @Column({ type: 'decimal', precision: 10, scale: 4 })
+    value: string;
 
     @Column({ type: 'enum', enum: CalculatedFrom, nullable: true })
     calculateFrom: CalculatedFrom;

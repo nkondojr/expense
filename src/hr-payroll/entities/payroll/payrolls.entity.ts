@@ -33,8 +33,8 @@ export class Payroll {
     @Column('date')
     date: string; // Payroll date
 
-    @Column('decimal', { precision: 20, scale: 2, default: 0 })
-    totalCost: number; // Total cost of payroll
+    @Column('decimal', { precision: 20, scale: 4, default: 0 })
+    totalCost: string; // Total cost of payroll
 
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'created_by_id' })
@@ -63,9 +63,6 @@ export class Payroll {
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updatedAt: Date; // Updated timestamp
-
-    // @OneToMany(() => PayrollItem, payrollItems => payrollItems.payroll)
-    // payrollItems: [];
 
     // Generate payroll number logic (in service or before insert)
     static generatePayrollNumber(): string {

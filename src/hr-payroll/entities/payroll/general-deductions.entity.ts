@@ -21,8 +21,8 @@ export class PayrollCompensation {
     @ManyToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
     employee: Employee; // Foreign key to Employee entity
 
-    @Column('decimal', { precision: 20, scale: 2 })
-    amount: number; // Amount for payroll compensation
+    @Column('decimal', { precision: 20, scale: 4 })
+    amount: string; // Amount for payroll compensation
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date; // Created timestamp
