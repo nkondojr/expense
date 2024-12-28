@@ -3,6 +3,10 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { FinancialYearService } from './seeders/financial-year.service';
+import { GroupsService } from './seeders/groups.service';
+import { ClassesService } from './seeders/classes.service';
+import { AccountsService } from './seeders/accounts.service';
+import { BalanceService } from './seeders/balances.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -23,6 +27,22 @@ async function bootstrap() {
   // Retrieve the FinancialYearService and run the seeder
   const financialYearService = app.get(FinancialYearService);
   await financialYearService.seed();
+
+  // Retrieve the GroupsService and run the seeder
+  const groupService = app.get(GroupsService);
+  await groupService.seed();
+
+  // Retrieve the ClassesService and run the seeder
+  const classService = app.get(ClassesService);
+  await classService.seed();
+
+  // Retrieve the AccountsService and run the seeder
+  const accountService = app.get(AccountsService);
+  await accountService.seed();
+
+  // Retrieve the BalanceService and run the seeder
+  const balanceService = app.get(BalanceService);
+  await balanceService.seed();
 
   await app.listen(5000);
 }

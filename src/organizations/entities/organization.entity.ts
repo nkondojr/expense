@@ -1,5 +1,6 @@
 import { Report } from 'src/reports/entities/report.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Bank } from './banks/bank.entity';
 
 @Entity()
 export class Organization {
@@ -29,4 +30,7 @@ export class Organization {
 
   @OneToMany(() => Report, (reports) => reports.organization)
   reports: Report[];
+
+  @OneToMany(() => Bank, (banks) => banks.organization)
+  banks: Bank[];
 }

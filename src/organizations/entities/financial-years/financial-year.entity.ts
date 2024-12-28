@@ -1,3 +1,4 @@
+import { Budget } from 'src/accounts/entities/budgets/budget.entity';
 import { Payroll } from 'src/hr-payroll/entities/payroll/payroll.entity';
 import {
   Entity,
@@ -38,4 +39,7 @@ export class FinancialYear {
 
   @OneToMany(() => Payroll, (payrolls) => payrolls.financialYear)
   payrolls: Payroll[];
+
+  @OneToMany(() => Budget, (budgets) => budgets.financialYear)
+  budgets: Budget[];
 }

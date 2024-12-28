@@ -38,9 +38,32 @@ import { PayrollAccount } from './hr-payroll/entities/payroll/payroll-accounts.e
 import { EmployeeBank } from './hr-payroll/entities/employees/banks.entity';
 import { EmployeeReferee } from './hr-payroll/entities/employees/referees.entity';
 import { FinancialYear } from './organizations/entities/financial-years/financial-year.entity';
+import { Budget } from './accounts/entities/budgets/budget.entity';
+import { Bank } from './organizations/entities/banks/bank.entity';
+import { Account } from './accounts/entities/account.entity';
+import { Group } from './accounts/entities/group.entity';
+import { Class } from './accounts/entities/class.entity';
+import { Balance } from './accounts/entities/balance.entity';
+import { Transaction } from './accounts/entities/transaction.entity';
+import { Staff } from './accounts/entities/staff.entity';
+import { JournalEntry } from './accounts/entities/journals/journal-entries/journal-entry.entity';
+import { JournalEntryItem } from './accounts/entities/journals/journal-entries/journal-entry-item.entity';
+import { BankTransfer } from './accounts/entities/journals/bank-transfers/bank-transfer.entity';
+import { PaymentAndReceipt } from './accounts/entities/journals/payments-&-receipts/payment-&-receipt.entity';
+import { PaymentAndReceiptItem } from './accounts/entities/journals/payments-&-receipts/payment-&-receipt-item.entity';
+import { BudgetItem } from './accounts/entities/budgets/budget-item.entity';
+import { BudgetAdjustment } from './accounts/entities/budgets/adjustments/budget-adjustment.entity';
+import { BudgetAdjustmentItem } from './accounts/entities/budgets/adjustments/budget-adjustement-item.entity';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'media', 'uploads'),
+      exclude: ['/api/(.*)'],
+      serveRoot: '/media/uploads',
+    }),
+
     ConfigurationModule,
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRootAsync({
@@ -76,7 +99,34 @@ import { FinancialYear } from './organizations/entities/financial-years/financia
           Individual,
           PayrollIndividual,
           PayrollAccount,
-          FinancialYear
+          FinancialYear,
+          //Accounts
+          Account,
+          Bank,
+          Group,
+          Class,
+          Balance,
+          Transaction,
+
+          //Staff
+          Staff,
+
+          //Jouurnal Entries
+          JournalEntry,
+          JournalEntryItem,
+
+          //Bank Transfer
+          BankTransfer,
+
+          //Journals (Payment & Receipt)
+          PaymentAndReceipt,
+          PaymentAndReceiptItem,
+
+          //Budget
+          Budget,
+          BudgetItem,
+          BudgetAdjustment,
+          BudgetAdjustmentItem,
         ],
         // entities: [join(process.cwd(), 'dist/**/*.entity.js')],
         // do NOT use synchronize: true in real projects
@@ -92,7 +142,9 @@ import { FinancialYear } from './organizations/entities/financial-years/financia
     ExpenseItemsModule,
     ReportsModule,
     OrganizationModule,
-    HrPayrollModule],
+    HrPayrollModule,
+    AccountsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
