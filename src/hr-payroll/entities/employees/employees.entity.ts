@@ -18,8 +18,7 @@ import { EmployeeBank } from './banks.entity';
 import { EmployeeQualification } from './qualifications.entity';
 import { EmployeeNextOfKin } from './next-of-kins.entity';
 import { EmployeeWorkHistory } from './work-histories.entity';
-import { PayrollItem } from '../payroll/payroll-items.entity';
-import { EmployeeCompensation } from '../payroll/individials.entity';
+import { Individual } from '../payroll/individials.entity';
 
 export enum IDType {
     NIDA = 'Nida',
@@ -172,8 +171,8 @@ export class Employee {
     @OneToMany(() => EmployeeWorkHistory, workHistories => workHistories.employee)
     workHistories: EmployeeWorkHistory[];
 
-    @OneToMany(() => EmployeeCompensation, employee_individual_compensations => employee_individual_compensations.employee)
-    employee_individual_compensations: EmployeeCompensation[];
+    @OneToMany(() => Individual, individuals => individuals.employee)
+    individuals: Individual[];
 
     // getFullName(): string {
     //     return `${this.user.firstName} ${this.user.middleName || ''} ${this.user.lastName}`.trim();

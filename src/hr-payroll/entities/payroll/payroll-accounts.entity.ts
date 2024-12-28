@@ -1,25 +1,24 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn, Index } from 'typeorm';
-import { Compensation } from './generals.entity';
-import { EmployeeCompensation } from './individials.entity';
-import { Payroll } from './payroll.entity';
+import { General } from './generals.entity';
+import { Individual } from './individials.entity';
 
 @Entity('hr_payroll_account')
-@Index('compensation_account_index', ['generalCompensation', 'individualCompensation']) // Optional: Index for generalCompensation and individualCompensation fields
+@Index('deduction_account_index', ['general', 'individual']) // Optional: Index for general and individual fields
 export class PayrollAccount {
 
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key
 
     @Column({ length: 30, enum: ['General', 'Individual'] })
-    type: 'General' | 'Individual'; // Type of compensation account
+    type: 'General' | 'Individual'; // Type of deduction account
 
-    @OneToOne(() => Compensation, { nullable: true })
-    @JoinColumn({ name: 'general_compensation_id' })
-    generalCompensation: Compensation; // One-to-one relationship with Compensation (for general compensation)
+    @OneToOne(() => General, { nullable: true })
+    @JoinColumn({ name: 'general_id' })
+    general: General; // One-to-one relationship with deduction (for general deduction)
 
-    @OneToOne(() => EmployeeCompensation, { nullable: true })
-    @JoinColumn({ name: 'individual_compensation_id' })
-    individualCompensation: EmployeeCompensation; // One-to-one relationship with EmployeeCompensation (for individual compensation)
+    @OneToOne(() => Individual, { nullable: true })
+    @JoinColumn({ name: 'individual_id' })
+    individual: Individual; // One-to-one relationship with Individual (for individual deduction)
 
     // @ManyToOne(() => Account, { nullable: true })
     // @JoinColumn({ name: 'liability_account_id' })

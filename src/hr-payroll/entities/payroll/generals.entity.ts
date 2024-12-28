@@ -10,13 +10,13 @@ import {
     Index
 } from 'typeorm';
 
-export enum CompensationType {
+export enum DeductionType {
     EMPLOYEE_EARNING = 'Employee Earning',
     EMPLOYEE_STATUTORY_DEDUCTION = 'Employee Statutory Deduction',
     EMPLOYER_STATUTORY_CONTRIBUTION = 'Employer Statutory Contribution'
 }
 
-export enum CompensationNature {
+export enum DeductionNature {
     CONSTANT = 'Constant',
     PERCENTAGE = 'Percentage'
 }
@@ -35,7 +35,7 @@ export enum CalculatedFrom {
 
 @Entity('hr_payroll_general')
 @Index(['createdAt'])
-export class Compensation {
+export class General {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -45,14 +45,14 @@ export class Compensation {
     @Column({ length: 100, unique: true })
     name: string;
 
-    @Column({ type: 'enum', enum: CompensationType })
-    type: CompensationType;
+    @Column({ type: 'enum', enum: DeductionType })
+    type: DeductionType;
 
     @Column({ type: 'enum', enum: TransactionType })
     transactionType: TransactionType;
 
-    @Column({ type: 'enum', enum: CompensationNature })
-    nature: CompensationNature;
+    @Column({ type: 'enum', enum: DeductionNature })
+    nature: DeductionNature;
 
     @Column({ type: 'decimal', precision: 10, scale: 4 })
     value: string;

@@ -10,12 +10,12 @@ import { EmployeeNextOfKin } from './entities/employees/next-of-kins.entity';
 import { EmployeeQualification } from './entities/employees/qualifications.entity';
 import { Payroll } from './entities/payroll/payroll.entity';
 import { PayrollAccount } from './entities/payroll/payroll-accounts.entity';
-import { PayrollCompensation } from './entities/payroll/general-deductions.entity';
-import { EmployeeCompensation } from './entities/payroll/individials.entity';
-import { EmployeePayrollCompensation } from './entities/payroll/individual-deductions.entity';
+import { PayrollGeneral } from './entities/payroll/general-deductions.entity';
+import { Individual } from './entities/payroll/individials.entity';
+import { PayrollIndividual } from './entities/payroll/individual-deductions.entity';
 import { PayrollItem } from './entities/payroll/payroll-items.entity';
 import { EmployeeWorkHistory } from './entities/employees/work-histories.entity';
-import { Compensation } from './entities/payroll/generals.entity';
+import { General } from './entities/payroll/generals.entity';
 import { EmployeeBank } from './entities/employees/banks.entity';
 import { EmployeeReferee } from './entities/employees/referees.entity';
 
@@ -32,10 +32,10 @@ import { EmployeeReferee } from './entities/employees/referees.entity';
       EmployeeReferee,
       Payroll,
       PayrollItem,
-      Compensation,
-      PayrollCompensation,
-      EmployeeCompensation,
-      EmployeePayrollCompensation,
+      General,
+      PayrollGeneral,
+      Individual,
+      PayrollIndividual,
       PayrollAccount,
     ]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule

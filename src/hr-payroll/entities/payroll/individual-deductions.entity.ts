@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
 import { Payroll } from './payroll.entity';
-import { EmployeeCompensation } from './individials.entity';
+import { Individual } from './individials.entity';
 
 @Entity('hr_payroll_individual_deduction')
-@Index('employee_compensation_index', ['employeeCompensation'])
-export class EmployeePayrollCompensation {
+@Index('employee_general_index', ['individual'])
+export class PayrollIndividual {
 
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key
@@ -13,11 +13,11 @@ export class EmployeePayrollCompensation {
     @ManyToOne(() => Payroll, { nullable: true, onDelete: 'SET NULL' })
     payroll: Payroll; // Foreign key to Payroll entity
 
-    @ManyToOne(() => EmployeeCompensation, { nullable: true, onDelete: 'SET NULL' })
-    employeeCompensation: EmployeeCompensation; // Foreign key to EmployeeCompensation entity
+    @ManyToOne(() => Individual, { nullable: true, onDelete: 'SET NULL' })
+    individual: Individual; // Foreign key to Individual entity
 
     @Column('decimal', { precision: 20, scale: 4 })
-    amount: string; // Amount for employee payroll compensation
+    amount: string; // Amount for employee payroll general
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date; // Created timestamp

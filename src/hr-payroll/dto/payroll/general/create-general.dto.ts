@@ -1,5 +1,5 @@
 import { IsDecimal, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
-import { CompensationType, TransactionType, CompensationNature, CalculatedFrom  } from 'src/hr-payroll/entities/payroll/generals.entity';
+import { DeductionType, TransactionType, DeductionNature, CalculatedFrom  } from 'src/hr-payroll/entities/payroll/generals.entity';
 
 export class CreateGeneralDeductionDto {
     @IsString()
@@ -7,17 +7,17 @@ export class CreateGeneralDeductionDto {
     @IsNotEmpty()
     name: string; // Deduction name
 
-    @IsEnum(CompensationType)
+    @IsEnum(DeductionType)
     @IsNotEmpty()
-    type: CompensationType; // Compensation type
+    type: DeductionType; // Deduction type
 
     @IsEnum(TransactionType)
     @IsNotEmpty()
     transactionType: TransactionType; // Transaction type
 
-    @IsEnum(CompensationNature)
+    @IsEnum(DeductionNature)
     @IsNotEmpty()
-    nature: CompensationNature; // Nature of compensation
+    nature: DeductionNature; // Nature of deduction
 
     @IsDecimal({ decimal_digits: '1,4', force_decimal: true })
     @IsNotEmpty()
@@ -25,5 +25,5 @@ export class CreateGeneralDeductionDto {
 
     @IsEnum(CalculatedFrom)
     @IsOptional()
-    calculateFrom?: CalculatedFrom; // Compensation calculation base (optional)
+    calculateFrom?: CalculatedFrom; // Deduction calculation base (optional)
 }

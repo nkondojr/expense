@@ -30,10 +30,10 @@ import { EmployeeNextOfKin } from './hr-payroll/entities/employees/next-of-kins.
 import { EmployeeQualification } from './hr-payroll/entities/employees/qualifications.entity';
 import { Payroll } from './hr-payroll/entities/payroll/payroll.entity';
 import { PayrollItem } from './hr-payroll/entities/payroll/payroll-items.entity';
-import { Compensation } from './hr-payroll/entities/payroll/generals.entity';
-import { PayrollCompensation } from './hr-payroll/entities/payroll/general-deductions.entity';
-import { EmployeeCompensation } from './hr-payroll/entities/payroll/individials.entity';
-import { EmployeePayrollCompensation } from './hr-payroll/entities/payroll/individual-deductions.entity';
+import { General } from './hr-payroll/entities/payroll/generals.entity';
+import { PayrollGeneral } from './hr-payroll/entities/payroll/general-deductions.entity';
+import { Individual } from './hr-payroll/entities/payroll/individials.entity';
+import { PayrollIndividual } from './hr-payroll/entities/payroll/individual-deductions.entity';
 import { PayrollAccount } from './hr-payroll/entities/payroll/payroll-accounts.entity';
 import { EmployeeBank } from './hr-payroll/entities/employees/banks.entity';
 import { EmployeeReferee } from './hr-payroll/entities/employees/referees.entity';
@@ -71,10 +71,10 @@ import { FinancialYear } from './organizations/entities/financial-years/financia
           EmployeeReferee,
           Payroll,
           PayrollItem,
-          Compensation,
-          PayrollCompensation,
-          EmployeeCompensation,
-          EmployeePayrollCompensation,
+          General,
+          PayrollGeneral,
+          Individual,
+          PayrollIndividual,
           PayrollAccount,
           FinancialYear
         ],
