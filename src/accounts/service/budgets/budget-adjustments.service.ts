@@ -128,13 +128,27 @@ export class BudgetAdjustmentsService {
       calculatedIncomeAmount += Number(item.currentAmount); // Convert to number
     }
 
+    // Convert totals to numbers and round to 2 decimal places
+    const roundedCalculatedExpenseAmount = Number(
+      calculatedExpenseAmount.toFixed(2),
+    );
+    const roundedCalculatedIncomeAmount = Number(
+      calculatedIncomeAmount.toFixed(2),
+    );
+    const roundedProvidedExpenseAmount = Number(
+      Number(totalExpenseAmount).toFixed(2),
+    );
+    const roundedProvidedIncomeAmount = Number(
+      Number(totalIncomeAmount).toFixed(2),
+    );
+
     // Verify total amounts match
     if (
-      calculatedExpenseAmount.toString() !== totalExpenseAmount ||
-      calculatedIncomeAmount.toString() !== totalIncomeAmount
+      roundedCalculatedExpenseAmount !== roundedProvidedExpenseAmount ||
+      roundedCalculatedIncomeAmount !== roundedProvidedIncomeAmount
     ) {
       throw new BadRequestException(
-        'Total amounts for income and expense accounts do not match provided totals',
+        `Total amounts for income and expense accounts ${roundedCalculatedIncomeAmount} and ${roundedCalculatedExpenseAmount} do not match provided totals ${roundedProvidedIncomeAmount} and ${roundedProvidedExpenseAmount} respectively`,
       );
     }
 
@@ -147,8 +161,8 @@ export class BudgetAdjustmentsService {
       attachment: imageUrl,
       status: 'Pending',
       date,
-      totalExpenseAmount: calculatedExpenseAmount.toString(),
-      totalIncomeAmount: calculatedIncomeAmount.toString(),
+      totalExpenseAmount: roundedCalculatedExpenseAmount.toString(),
+      totalIncomeAmount: roundedCalculatedIncomeAmount.toString(),
     });
 
     try {

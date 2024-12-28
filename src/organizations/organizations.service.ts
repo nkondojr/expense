@@ -10,9 +10,10 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { isUUID } from 'class-validator';
 import { Organization } from './entities/organization.entity';
-import { buildPaginationResponse } from 'utils/pagination.utils';
+import { buildPaginationResponse, paginate } from 'utils/pagination.utils';
 import { SearchParams } from 'utils/search-parms.util';
 import { FinancialYear } from './entities/financial-years/financial-year.entity';
+import { Bank } from './entities/banks/bank.entity';
 
 @Injectable()
 export class OrganizationService {
@@ -22,6 +23,9 @@ export class OrganizationService {
 
     @InjectRepository(FinancialYear)
     private readonly financialYearRepository: Repository<FinancialYear>,
+
+    @InjectRepository(Bank)
+    private readonly bankRepository: Repository<Bank>,
   ) { }
 
   // ***********************************************************************************************************************************************
@@ -129,6 +133,35 @@ export class OrganizationService {
       pageSize,
       '/financial-years',
     );
+  }
+
+  // ***********************************************************************************************************************************************
+  async findAllBanks(searchParams: SearchParams): Promise<any> {
+    const { searchTerm, page, pageSize } = searchParams;
+
+    const query = this.bankRepository
+      .createQueryBuilder('banks')
+      .leftJoinAndSelect('banks.account', 'account') // Join with the Purchase Order (po) table
+      .select([
+        'banks',
+        'account.name',
+        'account.code',
+        'account.balance',
+        'account.mode',
+      ]);
+
+    if (searchTerm) {
+      query.where(
+        '(account.name ILIKE :searchTerm OR account.code ILIKE :searchTerm OR banks.bankName ILIKE :searchTerm OR banks.accountName ILIKE :searchTerm OR banks.accountNumber ILIKE :searchTerm OR banks.accountBranch ILIKE :searchTerm)',
+        { searchTerm: `%${searchTerm}%` },
+      );
+    }
+
+    paginate(query, page, pageSize);
+
+    const [banks, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(banks, total, page, pageSize, '/banks');
   }
 
   // ***********************************************************************************************************************************************

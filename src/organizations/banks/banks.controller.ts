@@ -13,7 +13,7 @@ import { UpdateBankDto } from '../dto/banks/update-bank.dto';
 import { Bank } from '../entities/banks/bank.entity';
 import { BanksService } from './banks.service';
 
-@Controller('banks')
+@Controller('organizations/banks')
 @UseGuards(JwtAuthGuard)
 export class BanksController {
   constructor(private readonly banksService: BanksService) {}

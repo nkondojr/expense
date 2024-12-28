@@ -50,6 +50,16 @@ export class OrganizationController {
     return this.organizationService.findAllFinancialYear(searchParams);
   }
 
+  @Get('banks')
+  async getAllBanks(
+    @Query('search') search: string,
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+  ): Promise<any> {
+    const searchParams = new SearchParams(search, page, pageSize);
+    return this.organizationService.findAllBanks(searchParams);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<any> {
     return this.organizationService.findOne(id);

@@ -898,7 +898,7 @@ export class AccountsService {
     if (searchTerm) {
       query
         .where(
-          '(budgets.financialYearName ILIKE :searchTerm OR budgets.bdgNumber ILIKE :searchTerm)',
+          '(financialYear.name ILIKE :searchTerm OR budgets.bdgNumber ILIKE :searchTerm)',
           { searchTerm: `%${searchTerm}%` },
         )
         .orWhere('CAST(budgets.totalExpenseAmount AS TEXT) ILIKE :searchTerm', {
