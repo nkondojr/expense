@@ -1,4 +1,4 @@
-import { IsDecimal, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsDecimal, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { DeductionType, TransactionType, DeductionNature, CalculatedFrom  } from 'src/hr-payroll/entities/payroll/generals.entity';
 
 export class CreateGeneralDeductionDto {
@@ -26,4 +26,12 @@ export class CreateGeneralDeductionDto {
     @IsEnum(CalculatedFrom)
     @IsOptional()
     calculateFrom?: CalculatedFrom; // Deduction calculation base (optional)
+
+    @IsInt()
+    @IsNotEmpty()
+    liabilityAccountId: number; // Foreign key to Account entity
+
+    @IsInt()
+    @IsNotEmpty()
+    expenseAccountId: number; // Foreign key to Account entity
 }

@@ -34,4 +34,12 @@ export class CreateIndividualDeductionDto {
     @IsEnum(CalculatedFrom)
     @IsNotEmpty()
     calculateFrom: CalculatedFrom; // Deduction calculation base
+
+    @IsInt()
+    @IsNotEmpty()
+    liabilityAccountId: number; // Foreign key to Account entity
+
+    @IsInt()
+    @IsNotEmpty()
+    expenseAccountId: number; // Foreign key to Account entity
 }
