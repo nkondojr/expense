@@ -15,14 +15,14 @@ export class Payroll {
     number: string; // Payroll number
 
     @ManyToOne(() => FinancialYear, { nullable: true })
-    @JoinColumn({ name: 'financial_year_id' })
+    @JoinColumn({ name: 'financialYearId' })
     financialYear: FinancialYear; // Foreign key to FinancialYear entity
 
     @ManyToMany(() => Employee)
     @JoinTable({
-        name: 'payroll_employees', // Many-to-many relation table
-        joinColumn: { name: 'payroll_id', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'employee_id', referencedColumnName: 'id' },
+        name: 'payrollEmployees', // Many-to-many relation table
+        joinColumn: { name: 'payrollId', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'employeeId', referencedColumnName: 'id' },
     })
     employees: Employee[]; // Many-to-many relationship with Employee entity
 
@@ -36,19 +36,19 @@ export class Payroll {
     status: 'Initialized' | 'Approved' | 'Paid'; // Payroll status
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'created_by_id' })
+    @JoinColumn({ name: 'createdById' })
     createdBy: User; // User who created the payroll
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'updated_by_id' })
+    @JoinColumn({ name: 'updatedById' })
     updatedBy: User; // User who updated the payroll
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'approved_by_id' })
+    @JoinColumn({ name: 'approvedById' })
     approvedBy: User; // User who approved the payroll
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'paid_by_id' })
+    @JoinColumn({ name: 'paidById' })
     paidBy: User; // User who paid the payroll
 
     @Column('date', { nullable: true })

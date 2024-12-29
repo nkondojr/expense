@@ -20,7 +20,7 @@ export class EmployeeQualification {
     uuid: string;
 
     @ManyToOne(() => Employee, (employee) => employee.qualifications, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'employee_id' })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee;
 
     @Column({ type: 'enum', enum: QualificationType })
@@ -60,16 +60,16 @@ export class EmployeeQualification {
     gradePoints: string;
 
     @ManyToOne(() => User, { onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'created_by' })
+    @JoinColumn({ name: 'createdBy' })
     createdBy: User;
 
     @ManyToOne(() => User, { onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'updated_by' })
+    @JoinColumn({ name: 'updatedBy' })
     updatedBy: User;
 
-    @CreateDateColumn({ name: 'created_at' })
+    @CreateDateColumn({ name: 'createdAt' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at' })
+    @UpdateDateColumn({ name: 'updatedAt' })
     updatedAt: Date;
 }

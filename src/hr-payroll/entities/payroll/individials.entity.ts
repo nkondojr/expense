@@ -17,7 +17,7 @@ export class Individual {
 
     @Index()
     @ManyToOne(() => Employee, employee => employee.individuals)
-    @JoinColumn({ name: 'employee_id' })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee; // Foreign key to Employee entity
 
     @Column('decimal', { precision: 10, scale: 4 })
@@ -42,11 +42,11 @@ export class Individual {
     isActive: boolean; // Whether the deduction is active
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'created_by' })
+    @JoinColumn({ name: 'createdBy' })
     createdBy: User; // User who created the deduction
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'updated_by' })
+    @JoinColumn({ name: 'updatedBy' })
     updatedBy: User; // User who updated the deduction
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })

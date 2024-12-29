@@ -64,16 +64,16 @@ export class General {
     isActive: boolean;
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'created_by' })
+    @JoinColumn({ name: 'createdBy' })
     createdBy: User;
 
     @ManyToOne(() => User, { nullable: true })
-    @JoinColumn({ name: 'updated_by' })
+    @JoinColumn({ name: 'updatedBy' })
     updatedBy: User;
 
-    @CreateDateColumn({ name: 'created_at' })
+    @CreateDateColumn({ name: 'createdAt' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at' })
+    @UpdateDateColumn({ name: 'updatedAt' })
     updatedAt: Date;
 }
