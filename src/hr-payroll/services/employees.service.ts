@@ -224,39 +224,38 @@ export class EmployeesService {
     const query = this.employeesRepository
       .createQueryBuilder('employees')
       .leftJoinAndSelect('employees.user', 'user')
-      .select(['employees', 'user']);
+      .select(['employees', 'user.username', 'user.mobile', 'user.email']);
 
-    if (searchTerm) {
-      const searchTerms = searchTerm.trim().split(/\s+/);
-
-      // Simplified concatenation to avoid errors
-      query.where(
-        `(COALESCE(employees.title, '') || ' ' || COALESCE(user."fullName", '')) ILIKE :fullNames`,
-        { fullNames: `%${searchTerms.join(' ')}%` },
-      );
-
-      // Adding individual search conditions
-      query.orWhere('employees."regNumber" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('employees.region ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('employees.district ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('employees.ward ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('employees.street ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('employees."maritalStatus" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('CAST(employees.tin AS TEXT) ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('employees."employmentType" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('user."fullName" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('user.mobile ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('user.gender ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
-        .orWhere('user.email ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
-
-      // Handling dates
-      query.orWhere("TO_CHAR(employees.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
-        searchTerm: `%${searchTerm}%`,
-      });
-      query.orWhere("TO_CHAR(employees.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
-        searchTerm: `%${searchTerm}%`,
-      });
-    }
+      if (searchTerm) {
+        query
+          .where(
+            `employees.regNumber ILIKE :searchTerm
+            OR CAST(employees.tin AS TEXT) ILIKE :searchTerm
+            OR CAST(employees.placeOfBirth AS TEXT) ILIKE :searchTerm
+            OR CAST(employees.employmentNumber AS TEXT) ILIKE :searchTerm
+            OR CAST(employees.maritalStatus AS TEXT) ILIKE :searchTerm
+            OR CAST(employees.pensionNumber AS TEXT) ILIKE :searchTerm
+            OR employees.district ILIKE :searchTerm
+            OR CAST(employees.idNumber AS TEXT) ILIKE :searchTerm
+            OR employees.ward ILIKE :searchTerm
+            OR employees.street ILIKE :searchTerm
+            OR CAST(employees.idType AS TEXT) ILIKE :searchTerm
+            OR CAST(employees.employmentType AS TEXT) ILIKE :searchTerm
+            OR CAST(employees.title AS TEXT) ILIKE :searchTerm
+            OR user.username ILIKE :searchTerm
+            OR CAST(user.mobile AS TEXT) ILIKE :searchTerm
+            OR user.email ILIKE :searchTerm
+            `,
+          {
+            searchTerm: `%${searchTerm}%`,
+          })
+          .orWhere("TO_CHAR(employees.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
+            searchTerm: `%${searchTerm}%`,
+          })
+          .orWhere("TO_CHAR(employees.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
+            searchTerm: `%${searchTerm}%`,
+          });
+      }
 
     // Apply pagination
     paginate(query, page, pageSize);
