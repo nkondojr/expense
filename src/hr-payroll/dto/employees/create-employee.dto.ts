@@ -6,6 +6,7 @@ import {
     IsNumber,
     IsOptional,
     IsString,
+    IsUUID,
     Length,
     ValidateNested,
 } from 'class-validator';
@@ -20,6 +21,7 @@ export class CreateEmployeeDto {
     @IsNotEmpty()
     title: EmployeeTitle;
 
+    @IsUUID()
     @IsNotEmpty()
     userId: string; // Reference to the `User` entity, likely sent as an ID
 

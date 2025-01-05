@@ -116,12 +116,12 @@ export class EmployeesService {
       throw new BadRequestException('Mandatory fields are missing.');
     }
 
-    // Check for duplicate Employee by employmentNumber
+    // Check for duplicate Employee by employment number
     const existingEmail = await this.employeesRepository.findOne({
       where: { employmentNumber: Raw(alias => `LOWER(TRIM(${alias})) = LOWER(TRIM(:employmentNumber))`, { employmentNumber }) },
     });
     if (existingEmail) {
-      throw new ConflictException(`Employee with employmentNumber ${employmentNumber} already exists.`);
+      throw new ConflictException(`Employee with employment number ${employmentNumber} already exists.`);
     }
 
     // Check for duplicate Employee by tin
@@ -130,26 +130,6 @@ export class EmployeesService {
     });
     if (existingTin) {
       throw new ConflictException(`Employee with tin ${tinString} already exists.`);
-    }
-
-    // Handle contracts if provided
-    if (contracts && contracts.length > 0) {
-      // Check for duplicate itemId values in contracts
-      const itemIds = contracts.map((item) => item.appointmentDate);
-      const uniqueItemIds = new Set(itemIds);
-      if (uniqueItemIds.size !== itemIds.length) {
-        throw new BadRequestException('Duplicate appointment date in employee contracts are not allowed.');
-      }
-
-      for (const employeeContractItem of contracts) {
-        // Check if a contract with the same appointment date already exists
-        const existingContract = await this.contractsRepository.findOne({
-          where: { appointmentDate: employeeContractItem.appointmentDate },
-        });
-        if (existingContract) {
-          throw new ConflictException(`Contract with appointment date ${employeeContractItem.appointmentDate} already exists.`);
-        }
-      }
     }
 
     // Handle the attachment image
@@ -252,7 +232,7 @@ export class EmployeesService {
         .where(
           // Use concatenation to search across title and fullName together
           `
-          CONCAT(employees.title, ' ', user.fullName) ILIKE :fullName
+          CONCAT(employees.title, ' ', user.fullName) ILIKE :fullNames
           OR employees.regNo ILIKE :searchTerm
           OR employees.region ILIKE :searchTerm
           OR employees.district ILIKE :searchTerm
@@ -268,14 +248,14 @@ export class EmployeesService {
           OR user.email ILIKE :searchTerm
           `,
           {
-            fullName: `%${searchTerms.join(' ')}%`, // Match full name
+            fullNames: `%${searchTerms.join(' ')}%`, // Match full name
             searchTerm: `%${searchTerm}%`, // Match individual fields
           },
         )
-        .orWhere("TO_CHAR(collections.startDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
+        .orWhere("TO_CHAR(employees.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
           searchTerm: `%${searchTerm}%`,
         })
-        .orWhere("TO_CHAR(collections.endDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
+        .orWhere("TO_CHAR(employees.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
           searchTerm: `%${searchTerm}%`,
         }
         );
