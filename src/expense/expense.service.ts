@@ -143,6 +143,7 @@ For further details, please refer to the link: https://expense.ecu.co.tz/.`;
     searchTerm?: string,
     page: number = 1,
     pageSize: number = 5,
+    year?: number, // New parameter for filtering by year
   ): Promise<any> {
     const query = this.expenseRepository
       .createQueryBuilder('expense')
@@ -167,6 +168,10 @@ For further details, please refer to the link: https://expense.ecu.co.tz/.`;
         .orWhere('CAST(expense.amount AS TEXT) ILIKE :searchTerm', {
           searchTerm: `%${searchTerm}%`,
         });
+    }
+
+    if (year) {
+      query.andWhere("EXTRACT(YEAR FROM expense.date) = :year", { year });
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);

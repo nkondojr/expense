@@ -19,7 +19,7 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 @Controller('expenses')
 @UseGuards(JwtAuthGuard)
 export class ExpenseController {
-  constructor(private readonly expenseService: ExpenseService) {}
+  constructor(private readonly expenseService: ExpenseService) { }
 
   @Post()
   async create(
@@ -33,8 +33,9 @@ export class ExpenseController {
     @Query('search') search: string,
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 5,
+    @Query('year') year: number = new Date().getFullYear(), // Default to the current year
   ): Promise<any> {
-    return this.expenseService.findAll(search, page, pageSize);
+    return this.expenseService.findAll(search, page, pageSize, year);
   }
 
   @Get(':id')
