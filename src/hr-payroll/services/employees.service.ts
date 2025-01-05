@@ -407,6 +407,10 @@ export class EmployeesService {
     if (ward) employee.ward = ward;
     if (street) employee.street = street;
     if (maritalStatus) employee.maritalStatus = maritalStatus;
+    if (dob) employee.dob = dob;
+    if (idType) employee.idType = idType;
+    if (employmentType) employee.employmentType = employmentType;
+    if (employmentDate) employee.employmentDate = employmentDate;
     if (attachment) employee.attachment = saveImage(attachment, FileType.ATTACHMENT);
 
     try {

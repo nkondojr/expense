@@ -17,7 +17,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get()
   async findAll(
@@ -41,9 +41,16 @@ export class UsersController {
     return user;
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.usersService.remove(id);
-    return { message: 'User deleted successfully' };
+  // @Delete(':id')
+  // async remove(@Param('id') id: string) {
+  //   await this.usersService.remove(id);
+  //   return { message: 'User deleted successfully' };
+  // }
+
+  @Patch(':id/activate-deactivate')
+  async toggleUserStatus(
+    @Param('id') id: string,
+  ): Promise<{ message: string }> {
+    return this.usersService.toggleUserStatus(id);
   }
 }

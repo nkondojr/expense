@@ -16,7 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private usersRepository: Repository<User>,
   ) {}
 
   // ***********************************************************************************************************************************************
@@ -38,7 +38,7 @@ export class UsersService {
     user.password = hashedPassword;
 
     try {
-      await this.userRepository.save(user);
+      await this.usersRepository.save(user);
       return {
         message: 'User created successfully',
       };
@@ -53,12 +53,12 @@ export class UsersService {
 
   // ***********************************************************************************************************************************************
   async findByEmail(email: string): Promise<User> {
-    return this.userRepository.findOne({ where: { email } });
+    return this.usersRepository.findOne({ where: { email } });
   }
 
   // ***********************************************************************************************************************************************
   async getUserProfile(id: string): Promise<Partial<User> | undefined> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({ where: { id } });
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
@@ -69,7 +69,7 @@ export class UsersService {
     page: number = 1,
     pageSize: number = 10,
   ): Promise<any> {
-    const query = this.userRepository
+    const query = this.usersRepository
       .createQueryBuilder('user')
       .select([
         'user.id',
@@ -116,7 +116,7 @@ export class UsersService {
       throw new BadRequestException('Invalid ID format');
     }
 
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -134,7 +134,7 @@ export class UsersService {
       throw new BadRequestException('Invalid ID format');
     }
 
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -145,7 +145,7 @@ export class UsersService {
     }
 
     try {
-      await this.userRepository.update(id, updateUserDto);
+      await this.usersRepository.update(id, updateUserDto);
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException(
@@ -156,7 +156,7 @@ export class UsersService {
       }
     }
 
-    const updatedUser = await this.userRepository.findOne({ where: { id } });
+    const updatedUser = await this.usersRepository.findOne({ where: { id } });
     const { password, ...userWithoutPassword } = updatedUser;
 
     return {
@@ -165,17 +165,36 @@ export class UsersService {
     };
   }
 
+  // // ***********************************************************************************************************************************************
+  // async remove(id: string): Promise<void> {
+  //   if (!isUUID(id)) {
+  //     throw new BadRequestException('Invalid ID format');
+  //   }
+
+  //   const user = await this.usersRepository.findOne({ where: { id } });
+  //   if (!user) {
+  //     throw new NotFoundException(`User with ID ${id} not found`);
+  //   }
+
+  //   await this.usersRepository.delete(id);
+  // }
   // ***********************************************************************************************************************************************
-  async remove(id: string): Promise<void> {
+  async toggleUserStatus(id: string): Promise<{ message: string }> {
+    // Validate the UUID format
     if (!isUUID(id)) {
-      throw new BadRequestException('Invalid ID format');
+      throw new BadRequestException('Invalid UUID format');
     }
 
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    await this.userRepository.delete(id);
+    // Toggle the is_active status
+    user.is_active = !user.is_active;
+    await this.usersRepository.save(user);
+
+    const state = user.is_active ? 'activated' : 'deactivated';
+    return { message: `User ${state} successfully` };
   }
 }
