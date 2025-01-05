@@ -41,11 +41,11 @@ export class UsersController {
     return user;
   }
 
-  // @Delete(':id')
-  // async remove(@Param('id') id: string) {
-  //   await this.usersService.remove(id);
-  //   return { message: 'User deleted successfully' };
-  // }
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    await this.usersService.remove(id);
+    return { message: 'User deleted successfully' };
+  }
 
   @Patch(':id/activate-deactivate')
   async toggleUserStatus(

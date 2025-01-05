@@ -17,7 +17,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+  ) { }
 
   // ***********************************************************************************************************************************************
   async create(createUserDto: CreateUserDto): Promise<{ message: string }> {
@@ -165,19 +165,20 @@ export class UsersService {
     };
   }
 
-  // // ***********************************************************************************************************************************************
-  // async remove(id: string): Promise<void> {
-  //   if (!isUUID(id)) {
-  //     throw new BadRequestException('Invalid ID format');
-  //   }
+  // ***********************************************************************************************************************************************
+  async remove(id: string): Promise<void> {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
 
-  //   const user = await this.usersRepository.findOne({ where: { id } });
-  //   if (!user) {
-  //     throw new NotFoundException(`User with ID ${id} not found`);
-  //   }
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
-  //   await this.usersRepository.delete(id);
-  // }
+    await this.usersRepository.delete(id);
+  }
+
   // ***********************************************************************************************************************************************
   async toggleUserStatus(id: string): Promise<{ message: string }> {
     // Validate the UUID format
