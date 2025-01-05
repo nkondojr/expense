@@ -227,46 +227,52 @@ export class EmployeesService {
       .select(['employees', 'user']);
 
     if (searchTerm) {
-      const searchTerms = searchTerm.trim().split(/\s+/); // Split search term into words
+      const searchTerms = searchTerm.trim().split(/\s+/);
 
+      // Simplified concatenation to avoid errors
       query.where(
-        `
-        COALESCE(employees.title, '') || ' ' || COALESCE(user."fullName", '') ILIKE :fullNames
-        OR employees."regNumber" ILIKE :searchTerm
-        OR employees.region ILIKE :searchTerm
-        OR employees.district ILIKE :searchTerm
-        OR employees.ward ILIKE :searchTerm
-        OR employees.street ILIKE :searchTerm
-        OR employees."maritalStatus" ILIKE :searchTerm
-        OR CAST(employees.tin AS TEXT) ILIKE :searchTerm
-        OR employees."regNumber" ILIKE :searchTerm
-        OR employees."employmentType" ILIKE :searchTerm
-        OR user."fullName" ILIKE :searchTerm
-        OR user.mobile ILIKE :searchTerm
-        OR user.gender ILIKE :searchTerm
-        OR user.email ILIKE :searchTerm
-        `,
-        {
-          fullNames: `%${searchTerms.join(' ')}%`,
-          searchTerm: `%${searchTerm}%`,
-        },
-      )
-        .orWhere("TO_CHAR(employees.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
-          searchTerm: `%${searchTerm}%`,
-        })
-        .orWhere("TO_CHAR(employees.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
-          searchTerm: `%${searchTerm}%`,
-        });
+        `(COALESCE(employees.title, '') || ' ' || COALESCE(user."fullName", '')) ILIKE :fullNames`,
+        { fullNames: `%${searchTerms.join(' ')}%` },
+      );
+
+      // Adding individual search conditions
+      query.orWhere('employees."regNumber" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('employees.region ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('employees.district ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('employees.ward ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('employees.street ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('employees."maritalStatus" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('CAST(employees.tin AS TEXT) ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('employees."employmentType" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('user."fullName" ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('user.mobile ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('user.gender ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })
+        .orWhere('user.email ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+
+      // Handling dates
+      query.orWhere("TO_CHAR(employees.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
+        searchTerm: `%${searchTerm}%`,
+      });
+      query.orWhere("TO_CHAR(employees.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
+        searchTerm: `%${searchTerm}%`,
+      });
     }
 
     // Apply pagination
     paginate(query, page, pageSize);
 
-    // Execute query and get results with count
+    // Execute query and log SQL
+    console.log(query.getSql()); // Logs SQL for debugging
     const [employees, total] = await query.getManyAndCount();
 
-    // Build the pagination response
-    return buildPaginationResponse(employees, total, page, pageSize, '/hr-payroll/employees');
+    // Build response
+    return buildPaginationResponse(
+      employees,
+      total,
+      page,
+      pageSize,
+      '/hr-payroll/employees',
+    );
   }
 
   // ***********************************************************************************************************************************************
