@@ -1,5 +1,6 @@
 import {
     IsDate,
+    IsDateString,
     IsEmail,
     IsNotEmpty,
     IsOptional,
@@ -9,7 +10,7 @@ import {
 
 export class CreateWorkHistoryDto {
     @IsNotEmpty()
-    employeeId: number; // Reference to the Employee entity, sent as an ID
+    employeeId: string; // Reference to the Employee entity, sent as an ID
 
     @IsString()
     @IsNotEmpty()
@@ -26,11 +27,11 @@ export class CreateWorkHistoryDto {
     @Length(1, 200)
     jobTitle: string;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     startDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsOptional()
     endDate?: Date;
 

@@ -9,7 +9,7 @@ import {
 
 export class CreateRefereeDto {
     @IsNotEmpty()
-    employeeId: number; // Reference to the Employee entity, sent as an ID
+    employeeId: string; // Reference to the Employee entity, sent as an ID
 
     @IsString()
     @IsNotEmpty()

@@ -1,16 +1,18 @@
 import {
-    IsDate,
+    IsDateString,
     IsEnum,
     IsNotEmpty,
     IsOptional,
     IsString,
+    IsUUID,
     Length,
 } from 'class-validator';
 import { GradeType, QualificationType } from 'src/hr-payroll/entities/employees/qualifications.entity';
 
 export class CreateQualificationDto {
-    @IsNotEmpty()
-    employeeId: number; // Reference to the Employee entity, sent as an ID
+    @IsUUID()
+    @IsOptional()
+    employeeId: string;
 
     @IsEnum(QualificationType)
     @IsNotEmpty()
@@ -36,21 +38,20 @@ export class CreateQualificationDto {
     @Length(1, 255)
     programName: string;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     startDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     endDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsOptional()
     dateAwarded?: Date;
 
     @IsString()
     @IsOptional()
-    @Length(1, 255)
     attachment?: string;
 
     @IsEnum(GradeType)

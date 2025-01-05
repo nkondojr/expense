@@ -5,7 +5,8 @@ import {
     ManyToOne,
     CreateDateColumn,
     UpdateDateColumn,
-    Index
+    Index,
+    JoinColumn
 } from 'typeorm';
 import { Employee } from './employees.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -16,10 +17,14 @@ export class EmployeeBank {
     @PrimaryGeneratedColumn('uuid')
     uuid: string;
 
+    @Column({ nullable: false })
+    employeeId: string;
+
     @ManyToOne(() => Employee, (employee) => employee.banks, {
         onDelete: 'CASCADE',
         nullable: false
     })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee;
 
     @Column({ type: 'varchar', length: 255 })

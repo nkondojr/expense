@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Employee } from './employees.entity';
 import { User } from "src/users/entities/user.entity";
 
@@ -6,14 +6,11 @@ import { User } from "src/users/entities/user.entity";
 @Index('IDX_CONTRACT_APPOINTMENT_DATE', ['appointmentDate'])
 @Index('IDX_CONTRACT_END_DATE', ['contractEndDate'])
 @Index('IDX_CONTRACT_EMPLOYEE', ['employee'])
-export class EmployeeContract {
+export class Contract {
     @PrimaryGeneratedColumn('uuid')
     uuid: string;
 
-    @ManyToOne(() => Employee, (employee) => employee.contracts, {
-        onDelete: 'CASCADE',
-        nullable: false
-    })
+    @ManyToOne(() => Employee, employee => employee.contracts, { onDelete: 'CASCADE' })
     employee: Employee;
 
     @Column({ type: 'date' })

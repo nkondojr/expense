@@ -1,13 +1,19 @@
 import {
-    IsDate,
+    IsArray,
+    IsDateString,
     IsEnum,
     IsNotEmpty,
     IsNumber,
     IsOptional,
     IsString,
     Length,
+    ValidateNested,
 } from 'class-validator';
 import { EmployeeTitle, MaritalStatus, EmploymentType, IDType } from '../../entities/employees/employees.entity';
+import { CreateContractDto } from './contracts/create-contract.dto';
+import { CreateAllocationDto } from './allocations/create-allcocation.dto';
+import { CreateQualificationDto } from './qualifications/create-qualification.dto';
+import { Type } from 'class-transformer';
 
 export class CreateEmployeeDto {
     @IsEnum(EmployeeTitle)
@@ -15,9 +21,9 @@ export class CreateEmployeeDto {
     title: EmployeeTitle;
 
     @IsNotEmpty()
-    userId: number; // Reference to the `User` entity, likely sent as an ID
+    userId: string; // Reference to the `User` entity, likely sent as an ID
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     dob: Date;
 
@@ -52,7 +58,7 @@ export class CreateEmployeeDto {
     @IsOptional()
     tin?: number;
 
-    @IsDate()
+    @IsDateString()
     @IsOptional()
     employmentDate?: Date;
 
@@ -88,12 +94,23 @@ export class CreateEmployeeDto {
 
     @IsString()
     @IsOptional()
-    @Length(1, 255)
-    attachment?: string; // File path to the attachment
+    attachment?: string;
 
-    @IsOptional()
-    createdById?: number; // Reference to the `createdBy` user
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateContractDto)
+    @IsNotEmpty()
+    contracts: CreateContractDto[];
 
-    @IsOptional()
-    updatedById?: number; // Reference to the `updatedBy` user
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateAllocationDto)
+    @IsNotEmpty()
+    allocations: CreateAllocationDto[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateQualificationDto)
+    @IsNotEmpty()
+    qualifications: CreateQualificationDto[];
 }

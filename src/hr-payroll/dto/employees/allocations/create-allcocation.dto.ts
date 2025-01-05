@@ -1,13 +1,16 @@
 import {
     IsDecimal,
     IsNotEmpty,
+    IsOptional,
     IsString,
+    IsUUID,
     Length,
 } from 'class-validator';
 
 export class CreateAllocationDto {
-    @IsNotEmpty()
-    employeeId: number; // Reference to the Employee entity, sent as an ID
+    @IsUUID()
+    @IsOptional()
+    employeeId: string;
 
     @IsString()
     @IsNotEmpty()

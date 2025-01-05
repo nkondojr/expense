@@ -15,12 +15,11 @@ export enum QualificationType {
 
 @Entity('hr_employee_qualification')
 @Index(['employee'])
-export class EmployeeQualification {
+export class Qualification {
     @PrimaryGeneratedColumn('uuid')
     uuid: string;
 
-    @ManyToOne(() => Employee, (employee) => employee.qualifications, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'employeeId' })
+    @ManyToOne(() => Employee, employee => employee.qualifications, { onDelete: 'CASCADE' })
     employee: Employee;
 
     @Column({ type: 'enum', enum: QualificationType })

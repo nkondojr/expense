@@ -5,20 +5,26 @@ import {
     ManyToOne,
     CreateDateColumn,
     UpdateDateColumn,
-    Index
+    Index,
+    JoinColumn
 } from 'typeorm';
 import { Employee } from './employees.entity';
 import { User } from 'src/users/entities/user.entity';
 
 @Entity('hr_employee_working_history')
 @Index('IDX_WORK_HISTORY_EMPLOYEE', ['employee'])
-export class EmployeeWorkHistory {
+export class WorkHistory {
     @PrimaryGeneratedColumn('uuid')
     uuid: string;
 
+    @Column({ nullable: false })
+    employeeId: string;
+
     @ManyToOne(() => Employee, (employee) => employee.workHistories, {
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
+        nullable: false
     })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee;
 
     @Column({ type: 'varchar', length: 255 })

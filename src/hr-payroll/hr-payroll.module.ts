@@ -1,35 +1,36 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { EmployeeService } from './services/employees.service';
-import { EmployeeController } from './controllers/employees.controller';
+import { EmployeesService } from './services/employees.service';
+import { EmployeesController } from './controllers/employees.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
 import { Employee } from './entities/employees/employees.entity';
-import { EmployeeContract } from './entities/employees/contracts.entity';
-import { EmployeeAllocation } from './entities/employees/allocations.entity';
-import { EmployeeNextOfKin } from './entities/employees/next-of-kins.entity';
-import { EmployeeQualification } from './entities/employees/qualifications.entity';
+import { Contract } from './entities/employees/contracts.entity';
+import { Allocation } from './entities/employees/allocations.entity';
+import { NextOfKin } from './entities/employees/next-of-kins.entity';
+import { Qualification } from './entities/employees/qualifications.entity';
 import { Payroll } from './entities/payroll/payroll.entity';
 import { PayrollAccount } from './entities/payroll/payroll-accounts.entity';
 import { PayrollGeneral } from './entities/payroll/general-deductions.entity';
 import { Individual } from './entities/payroll/individials.entity';
 import { PayrollIndividual } from './entities/payroll/individual-deductions.entity';
 import { PayrollItem } from './entities/payroll/payroll-items.entity';
-import { EmployeeWorkHistory } from './entities/employees/work-histories.entity';
+import { WorkHistory } from './entities/employees/work-histories.entity';
 import { General } from './entities/payroll/generals.entity';
 import { EmployeeBank } from './entities/employees/banks.entity';
-import { EmployeeReferee } from './entities/employees/referees.entity';
+import { Referee } from './entities/employees/referees.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Employee,
-      EmployeeContract,
-      EmployeeAllocation,
+      Contract,
+      Allocation,
       EmployeeBank,
-      EmployeeWorkHistory,
-      EmployeeNextOfKin,
-      EmployeeQualification,
-      EmployeeReferee,
+      WorkHistory,
+      NextOfKin,
+      Qualification,
+      Referee,
       Payroll,
       PayrollItem,
       General,
@@ -37,10 +38,11 @@ import { EmployeeReferee } from './entities/employees/referees.entity';
       Individual,
       PayrollIndividual,
       PayrollAccount,
+      User,
     ]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
-  controllers: [EmployeeController],
-  providers: [EmployeeService],
+  controllers: [EmployeesController],
+  providers: [EmployeesService],
 })
 export class HrPayrollModule {}

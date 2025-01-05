@@ -4,20 +4,19 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToOne,
     JoinColumn,
     CreateDateColumn,
     UpdateDateColumn,
     Index,
     OneToMany
 } from 'typeorm';
-import { EmployeeReferee } from './referees.entity';
-import { EmployeeContract } from './contracts.entity';
-import { EmployeeAllocation } from './allocations.entity';
+import { Referee } from './referees.entity';
+import { Contract } from './contracts.entity';
+import { Allocation } from './allocations.entity';
 import { EmployeeBank } from './banks.entity';
-import { EmployeeQualification } from './qualifications.entity';
-import { EmployeeNextOfKin } from './next-of-kins.entity';
-import { EmployeeWorkHistory } from './work-histories.entity';
+import { Qualification } from './qualifications.entity';
+import { NextOfKin } from './next-of-kins.entity';
+import { WorkHistory } from './work-histories.entity';
 import { Individual } from '../payroll/individials.entity';
 
 export enum IDType {
@@ -63,10 +62,14 @@ export class Employee {
     })
     title: EmployeeTitle;
 
-    @OneToOne(() => User, (user) => user.employeeInfo, {
+    @Column({ nullable: false })
+    userId: string;
+
+    @ManyToOne(() => User, (user) => user.employeeInfo, {
         onDelete: 'CASCADE',
+        nullable: false
     })
-    @JoinColumn()
+    @JoinColumn({ name: 'userId' })
     user: User;
 
     @Column({ type: 'date', nullable: false })
@@ -102,7 +105,7 @@ export class Employee {
     @Column({ type: 'varchar', length: 50, unique: true })
     regNumber: string;
 
-    @Column({ type: 'bigint', unique: true, nullable: true })
+    @Column({ type: 'varchar', unique: true, nullable: true })
     tin: number;
 
     @Column({ type: 'date', nullable: true })
@@ -150,26 +153,26 @@ export class Employee {
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
 
-    @OneToMany(() => EmployeeReferee, referees => referees.employee)
-    referees: EmployeeReferee[];
+    @OneToMany(() => Referee, referees => referees.employee)
+    referees: Referee[];
 
-    @OneToMany(() => EmployeeContract, contracts => contracts.employee)
-    contracts: EmployeeContract[];
+    @OneToMany(() => Contract, (contracts) => contracts.employee)
+    contracts: Contract[];
 
-    @OneToMany(() => EmployeeAllocation, allocations => allocations.employee)
-    allocations: EmployeeAllocation[];
+    @OneToMany(() => Allocation, allocations => allocations.employee)
+    allocations: Allocation[];
 
     @OneToMany(() => EmployeeBank, banks => banks.employee)
     banks: EmployeeBank[];
 
-    @OneToMany(() => EmployeeQualification, qualifications => qualifications.employee)
-    qualifications: EmployeeQualification[];
+    @OneToMany(() => Qualification, qualifications => qualifications.employee)
+    qualifications: Qualification[];
 
-    @OneToMany(() => EmployeeNextOfKin, nextOfKins => nextOfKins.employee)
-    nextOfKins: EmployeeNextOfKin[];
+    @OneToMany(() => NextOfKin, nextOfKins => nextOfKins.employee)
+    nextOfKins: NextOfKin[];
 
-    @OneToMany(() => EmployeeWorkHistory, workHistories => workHistories.employee)
-    workHistories: EmployeeWorkHistory[];
+    @OneToMany(() => WorkHistory, workHistories => workHistories.employee)
+    workHistories: WorkHistory[];
 
     @OneToMany(() => Individual, individuals => individuals.employee)
     individuals: Individual[];

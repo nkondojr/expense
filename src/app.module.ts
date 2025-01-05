@@ -23,11 +23,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { HrPayrollModule } from './hr-payroll/hr-payroll.module';
 import { Employee } from './hr-payroll/entities/employees/employees.entity';
-import { EmployeeContract } from './hr-payroll/entities/employees/contracts.entity';
-import { EmployeeAllocation } from './hr-payroll/entities/employees/allocations.entity';
-import { EmployeeWorkHistory } from './hr-payroll/entities/employees/work-histories.entity';
-import { EmployeeNextOfKin } from './hr-payroll/entities/employees/next-of-kins.entity';
-import { EmployeeQualification } from './hr-payroll/entities/employees/qualifications.entity';
+import { Contract } from './hr-payroll/entities/employees/contracts.entity';
+import { Allocation } from './hr-payroll/entities/employees/allocations.entity';
+import { WorkHistory } from './hr-payroll/entities/employees/work-histories.entity';
+import { NextOfKin } from './hr-payroll/entities/employees/next-of-kins.entity';
+import { Qualification } from './hr-payroll/entities/employees/qualifications.entity';
 import { Payroll } from './hr-payroll/entities/payroll/payroll.entity';
 import { PayrollItem } from './hr-payroll/entities/payroll/payroll-items.entity';
 import { General } from './hr-payroll/entities/payroll/generals.entity';
@@ -36,7 +36,7 @@ import { Individual } from './hr-payroll/entities/payroll/individials.entity';
 import { PayrollIndividual } from './hr-payroll/entities/payroll/individual-deductions.entity';
 import { PayrollAccount } from './hr-payroll/entities/payroll/payroll-accounts.entity';
 import { EmployeeBank } from './hr-payroll/entities/employees/banks.entity';
-import { EmployeeReferee } from './hr-payroll/entities/employees/referees.entity';
+import { Referee } from './hr-payroll/entities/employees/referees.entity';
 import { FinancialYear } from './organizations/entities/financial-years/financial-year.entity';
 import { Budget } from './accounts/entities/budgets/budget.entity';
 import { Bank } from './organizations/entities/banks/bank.entity';
@@ -85,13 +85,13 @@ import { AccountsModule } from './accounts/accounts.module';
           Report,
           Organization,
           Employee,
-          EmployeeContract,
-          EmployeeAllocation,
+          Contract,
+          Allocation,
           EmployeeBank,
-          EmployeeWorkHistory,
-          EmployeeNextOfKin,
-          EmployeeQualification,
-          EmployeeReferee,
+          WorkHistory,
+          NextOfKin,
+          Qualification,
+          Referee,
           Payroll,
           PayrollItem,
           General,

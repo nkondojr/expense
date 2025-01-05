@@ -1,18 +1,19 @@
-import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import { IsDate, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 export class CreateContractDto {
-    @IsNotEmpty()
-    employeeId: number; // Reference to the Employee entity, sent as an ID
+    @IsUUID()
+    @IsOptional()
+    employeeId: string;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     appointmentDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     contractEndDate: Date;
 
-    @IsDate()
+    @IsDateString()
     @IsOptional()
     retirementDate?: Date;
 
@@ -22,6 +23,5 @@ export class CreateContractDto {
 
     @IsString()
     @IsOptional()
-    @Length(1, 255)
-    attachment?: string; // File path to the attachment
+    attachment?: string;
 }
