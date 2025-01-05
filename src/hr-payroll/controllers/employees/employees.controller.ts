@@ -12,9 +12,9 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 import { SearchParams } from 'utils/search-parms.util';
-import { EmployeesService } from '../services/employees.service';
-import { CreateEmployeeDto } from '../dto/employees/create-employee.dto';
-import { UpdateEmployeeDto } from '../dto/employees/update-employee.dto';
+import { EmployeesService } from '../../services/employees/employees.service';
+import { CreateEmployeeDto } from '../../dto/employees/create-employee.dto';
+import { UpdateEmployeeDto } from '../../dto/employees/update-employee.dto';
 
 @Controller('hr-payroll/employees')
 @UseGuards(JwtAuthGuard)

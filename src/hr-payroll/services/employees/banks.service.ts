@@ -8,10 +8,10 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { isUUID } from 'class-validator';
-import { Employee } from '../entities/employees/employees.entity';
+import { Employee } from '../../entities/employees/employees.entity';
 import { UpdateBankDto } from 'src/organizations/dto/banks/update-bank.dto';
-import { EmployeeBank } from '../entities/employees/banks.entity';
-import { CreateEmployeeBankDto } from '../dto/employees/banks/create-bank.dto';
+import { EmployeeBank } from '../../entities/employees/banks.entity';
+import { CreateEmployeeBankDto } from '../../dto/employees/banks/create-bank.dto';
 
 @Injectable()
 export class EmployeeBanksService {
@@ -37,7 +37,7 @@ export class EmployeeBanksService {
       );
     }
 
-    // Check if the multi-currency exists
+    // Check if the employee exists
     const checkEmployee = await this.employeesRepository
       .createQueryBuilder('employee')
       .select('employee')
@@ -48,6 +48,14 @@ export class EmployeeBanksService {
       throw new BadRequestException(`Employee with ID: ${employeeId} not found`);
     }
 
+    // Set isActive to false for all existing banks of the same employeeId
+    await this.banksRepository
+      .createQueryBuilder()
+      .update(EmployeeBank)
+      .set({ isActive: false })
+      .where('employeeId = :employeeId', { employeeId })
+      .execute();
+
     // Create a new Bank entity
     const bank = new EmployeeBank();
     bank.bankName = bankName;
@@ -55,6 +63,7 @@ export class EmployeeBanksService {
     bank.accountNumber = accountNumber;
     bank.accountBranch = accountBranch;
     bank.employeeId = employeeId;
+    bank.isActive = true; // Set the newly created bank as active
     bank.createdBy = user;
     bank.updatedBy = user;
 
@@ -101,7 +110,7 @@ export class EmployeeBanksService {
     // Find the bank to update by UUID
     const bank = await this.banksRepository.findOne({
       where: { id },
-      relations: ['reference'],
+      relations: ['employee'],
     });
     if (!bank) {
       throw new NotFoundException(`Bank with ID ${id} not found`);
@@ -137,6 +146,7 @@ export class EmployeeBanksService {
       throw new BadRequestException('Invalid UUID format');
     }
 
+    // Find the bank by ID
     const bank = await this.banksRepository.findOne({
       where: { id },
     });
@@ -145,11 +155,23 @@ export class EmployeeBanksService {
       throw new NotFoundException(`Bank with ID ${id} not found`);
     }
 
-    // If no item has storeQty of 0, toggle the isActive status as normal
-    bank.isActive = !bank.isActive;
+    // Ensure only one bank is active for the employee
+    if (!bank.isActive) {
+      // Deactivate all other banks for the same employeeId
+      await this.banksRepository
+        .createQueryBuilder()
+        .update(EmployeeBank)
+        .set({ isActive: false })
+        .where('employeeId = :employeeId', { employeeId: bank.employeeId })
+        .execute();
+
+      // Activate the current bank
+      bank.isActive = true;
+    }
+
+    // Save the bank with the updated status
     await this.banksRepository.save(bank);
 
-    const state = bank.isActive ? 'activated' : 'deactivated';
-    return { message: `Bank ${state} successfully` };
+    return { message: `Bank activated successfully` };
   }
 }

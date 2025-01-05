@@ -9,14 +9,14 @@ import { Not, Raw, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { SearchParams } from 'utils/search-parms.util';
-import { Employee } from '../entities/employees/employees.entity';
-import { Contract } from '../entities/employees/contracts.entity';
-import { Allocation } from '../entities/employees/allocations.entity';
+import { Employee } from '../../entities/employees/employees.entity';
+import { Contract } from '../../entities/employees/contracts.entity';
+import { Allocation } from '../../entities/employees/allocations.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Qualification } from '../entities/employees/qualifications.entity';
-import { CreateEmployeeDto } from '../dto/employees/create-employee.dto';
+import { Qualification } from '../../entities/employees/qualifications.entity';
+import { CreateEmployeeDto } from '../../dto/employees/create-employee.dto';
 import { FileType, saveImage } from 'utils/image-media.utils';
-import { UpdateEmployeeDto } from '../dto/employees/update-employee.dto';
+import { UpdateEmployeeDto } from '../../dto/employees/update-employee.dto';
 
 @Injectable()
 export class EmployeesService {

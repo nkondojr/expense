@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { EmployeesService } from './services/employees.service';
-import { EmployeesController } from './controllers/employees.controller';
+import { EmployeesService } from './services/employees/employees.service';
+import { EmployeesController } from './controllers/employees/employees.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
 import { Employee } from './entities/employees/employees.entity';
@@ -19,8 +19,8 @@ import { General } from './entities/payroll/generals.entity';
 import { EmployeeBank } from './entities/employees/banks.entity';
 import { Referee } from './entities/employees/referees.entity';
 import { User } from 'src/users/entities/user.entity';
-import { EmployeeBanksController } from './controllers/banks.controller';
-import { EmployeeBanksService } from './services/banks.service';
+import { EmployeeBanksController } from './controllers/employees/banks.controller';
+import { EmployeeBanksService } from './services/employees/banks.service';
 
 @Module({
   imports: [

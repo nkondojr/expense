@@ -10,10 +10,10 @@ import {
 import { GetUser } from 'src/authentication/decorators/get-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
-import { CreateEmployeeBankDto } from '../dto/employees/banks/create-bank.dto';
-import { EmployeeBank } from '../entities/employees/banks.entity';
-import { UpdateEmployeeBankDto } from '../dto/employees/banks/update-bank.dto';
-import { EmployeeBanksService } from '../services/banks.service';
+import { CreateEmployeeBankDto } from '../../dto/employees/banks/create-bank.dto';
+import { EmployeeBank } from '../../entities/employees/banks.entity';
+import { UpdateEmployeeBankDto } from '../../dto/employees/banks/update-bank.dto';
+import { EmployeeBanksService } from '../../services/employees/banks.service';
 
 @Controller('hr-payroll/employees/banks')
 @UseGuards(JwtAuthGuard)
@@ -42,7 +42,7 @@ export class EmployeeBanksController {
     return this.banksService.update(id, updateEmployeeBankDto, user);
   }
 
-  @Patch(':id/activate-deactivate')
+  @Patch(':id/activate')
   async toggleBankStatus(
     @Param('id') id: string,
   ): Promise<{ message: string }> {
