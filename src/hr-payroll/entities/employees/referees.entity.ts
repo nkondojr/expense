@@ -14,7 +14,7 @@ import { User } from 'src/users/entities/user.entity';
 @Entity('hr_employee_referee')
 export class Referee {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @Column({ nullable: false })
     employeeId: string;

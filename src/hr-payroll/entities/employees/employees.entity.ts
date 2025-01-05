@@ -162,8 +162,8 @@ export class Employee {
     @OneToMany(() => Allocation, allocations => allocations.employee)
     allocations: Allocation[];
 
-    @OneToMany(() => EmployeeBank, banks => banks.employee)
-    banks: EmployeeBank[];
+    @OneToMany(() => EmployeeBank, employeeBanks => employeeBanks.employee)
+    employeeBanks: EmployeeBank[];
 
     @OneToMany(() => Qualification, qualifications => qualifications.employee)
     qualifications: Qualification[];

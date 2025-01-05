@@ -6,7 +6,6 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     Index,
-    JoinColumn
 } from 'typeorm';
 import { Employee } from './employees.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -15,7 +14,7 @@ import { User } from 'src/users/entities/user.entity';
 @Index('IDX_ALLOCATION_EMPLOYEE', ['employee'])
 export class Allocation {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @ManyToOne(() => Employee, employee => employee.allocations, { onDelete: 'CASCADE' })
     employee: Employee;

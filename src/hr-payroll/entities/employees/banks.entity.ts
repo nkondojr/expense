@@ -15,12 +15,12 @@ import { User } from 'src/users/entities/user.entity';
 @Index('IDX_EMPLOYEE_BANK_EMPLOYEE', ['employee'])
 export class EmployeeBank {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @Column({ nullable: false })
     employeeId: string;
 
-    @ManyToOne(() => Employee, (employee) => employee.banks, {
+    @ManyToOne(() => Employee, (employee) => employee.employeeBanks, {
         onDelete: 'CASCADE',
         nullable: false
     })
@@ -42,16 +42,10 @@ export class EmployeeBank {
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
 
-    @ManyToOne(() => User, {
-        nullable: true,
-        onDelete: 'SET NULL'
-    })
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
     createdBy: User;
 
-    @ManyToOne(() => User, {
-        nullable: true,
-        onDelete: 'SET NULL'
-    })
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
     updatedBy: User;
 
     @CreateDateColumn()

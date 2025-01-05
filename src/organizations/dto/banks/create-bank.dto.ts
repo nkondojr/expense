@@ -1,4 +1,4 @@
-import { IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, Length } from 'class-validator';
 
 export class CreateBankDto {
   @IsString({ message: 'Bank name must be a string.' })
@@ -24,4 +24,9 @@ export class CreateBankDto {
     message: 'accountBranch must be between 1 and 50 characters.',
   })
   accountBranch: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsUUID()
+  employeeId: string;
 }

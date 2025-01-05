@@ -17,7 +17,7 @@ export enum QualificationType {
 @Index(['employee'])
 export class Qualification {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @ManyToOne(() => Employee, employee => employee.qualifications, { onDelete: 'CASCADE' })
     employee: Employee;

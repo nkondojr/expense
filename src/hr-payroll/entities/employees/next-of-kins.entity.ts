@@ -15,7 +15,7 @@ import { User } from 'src/users/entities/user.entity';
 @Index('IDX_NEXT_OF_KIN_EMPLOYEE', ['employee'])
 export class NextOfKin {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @Column({ nullable: false })
     employeeId: string;

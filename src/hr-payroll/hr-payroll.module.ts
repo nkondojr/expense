@@ -19,6 +19,8 @@ import { General } from './entities/payroll/generals.entity';
 import { EmployeeBank } from './entities/employees/banks.entity';
 import { Referee } from './entities/employees/referees.entity';
 import { User } from 'src/users/entities/user.entity';
+import { EmployeeBanksController } from './controllers/banks.controller';
+import { EmployeeBanksService } from './services/banks.service';
 
 @Module({
   imports: [
@@ -42,7 +44,7 @@ import { User } from 'src/users/entities/user.entity';
     ]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
-  controllers: [EmployeesController],
-  providers: [EmployeesService],
+  controllers: [EmployeesController, EmployeeBanksController],
+  providers: [EmployeesService, EmployeeBanksService],
 })
 export class HrPayrollModule {}

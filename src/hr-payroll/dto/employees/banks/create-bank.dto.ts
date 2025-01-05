@@ -1,11 +1,14 @@
 import {
     IsNotEmpty,
     IsString,
+    IsUUID,
     Length,
 } from 'class-validator';
 
 export class CreateEmployeeBankDto {
+    @IsString()
     @IsNotEmpty()
+    @IsUUID()
     employeeId: string; // Reference to the Employee entity, sent as an ID
 
     @IsString()

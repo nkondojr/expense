@@ -15,7 +15,7 @@ import { User } from 'src/users/entities/user.entity';
 @Index('IDX_WORK_HISTORY_EMPLOYEE', ['employee'])
 export class WorkHistory {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @Column({ nullable: false })
     employeeId: string;

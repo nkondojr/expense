@@ -286,7 +286,7 @@ export class EmployeesService {
 
     const employee = await this.employeesRepository.findOne({
       where: { id },
-      relations: ['user', 'banks', 'contracts', 'allocations', 'qualifications', 'referees', 'nextOfKins', 'workHistories'],
+      relations: ['user', 'employeeBanks', 'contracts', 'allocations', 'qualifications', 'referees', 'nextOfKins', 'workHistories'],
     });
     if (!employee) {
       throw new NotFoundException(`Employee with ID ${id} not found`);

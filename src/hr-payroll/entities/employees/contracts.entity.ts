@@ -8,7 +8,7 @@ import { User } from "src/users/entities/user.entity";
 @Index('IDX_CONTRACT_EMPLOYEE', ['employee'])
 export class Contract {
     @PrimaryGeneratedColumn('uuid')
-    uuid: string;
+    id: string;
 
     @ManyToOne(() => Employee, employee => employee.contracts, { onDelete: 'CASCADE' })
     employee: Employee;
