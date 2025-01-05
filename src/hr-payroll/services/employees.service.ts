@@ -74,6 +74,30 @@ export class EmployeesService {
     ward = ward?.trim();
     street = street?.trim();
 
+    // Check for duplicate Employee by userId
+    const existingUserEmployee = await this.employeesRepository.findOne({
+      where: { userId },
+    });
+    if (existingUserEmployee) {
+      throw new ConflictException(`Employee with userId ${userId} already exists.`);
+    }
+
+    // Validate user existence
+    const user = await this.usersRepository.findOne({
+      where: { id: userId }, // Ensure userId is cast to string
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Validate that user is active
+    if (!user.is_active) {
+      throw new NotFoundException(
+        `User with ID ${userId} is not active`,
+      );
+    }
+
     // Convert tin to string for manipulation
     let tinString = tin?.toString().trim();
 
@@ -106,22 +130,6 @@ export class EmployeesService {
     });
     if (existingTin) {
       throw new ConflictException(`Employee with tin ${tinString} already exists.`);
-    }
-
-    // Validate user existence
-    const user = await this.usersRepository.findOne({
-      where: { id: userId }, // Ensure userId is cast to number
-    });
-
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
-    }
-
-    // Validate that user is active
-    if (!user.is_active) {
-      throw new NotFoundException(
-        `User with ID ${userId} is not active`,
-      );
     }
 
     // Handle contracts if provided
@@ -292,7 +300,7 @@ export class EmployeesService {
 
     const employee = await this.employeesRepository.findOne({
       where: { id },
-      relations: ['fbrs', 'fbrs.boq', 'fbrs.boq.boqItems', 'fbrs.fbrItems', 'user', 'allocations', 'allocations.allocationCoordinates'],
+      relations: ['user', 'banks', 'contracts', 'allocations', 'qualifications', 'referees', 'nextOfKins', 'workHistories'],
     });
     if (!employee) {
       throw new NotFoundException(`Employee with ID ${id} not found`);
@@ -306,8 +314,25 @@ export class EmployeesService {
     id: string,
     updateEmployeeDto: UpdateEmployeeDto,
   ): Promise<{ message: string }> {
-    let { title, placeOfBirth, idNumber, pensionNumber, regNumber, employmentNumber, tin, attachment, maritalStatus } =
-      updateEmployeeDto;
+    let {
+      title,
+      placeOfBirth,
+      regNumber,
+      employmentNumber,
+      tin,
+      attachment,
+      maritalStatus,
+      region,
+      district,
+      pensionNumber,
+      ward,
+      street,
+      dob,
+      idType,
+      idNumber,
+      employmentType,
+      employmentDate,
+    } = updateEmployeeDto;
 
     // Validate the ID format
     if (!isUUID(id)) {
@@ -320,17 +345,16 @@ export class EmployeesService {
       throw new NotFoundException(`Employee with ID ${id} not found`);
     }
 
-    // Validate employmentNumber format
-    if (employmentNumber && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employmentNumber)) {
-      throw new BadRequestException('Invalid employmentNumber format.');
-    }
-
     // Normalize and validate input fields
     idNumber = idNumber?.trim();
     placeOfBirth = placeOfBirth?.trim();
     regNumber = regNumber?.trim();
     employmentNumber = employmentNumber?.trim();
     attachment = attachment?.trim();
+    region = region?.trim();
+    district = district?.trim();
+    ward = ward?.trim();
+    street = street?.trim();
     pensionNumber = pensionNumber?.trim();
 
     // Handle tin as a string for processing
@@ -392,6 +416,10 @@ export class EmployeesService {
     if (regNumber) employee.regNumber = regNumber;
     if (employmentNumber) employee.employmentNumber = employmentNumber;
     if (tinString) employee.tin = Number(tinString); // Convert back to number for storage
+    if (region) employee.region = region;
+    if (district) employee.district = district;
+    if (ward) employee.ward = ward;
+    if (street) employee.street = street;
     if (maritalStatus) employee.maritalStatus = maritalStatus;
     if (attachment) employee.attachment = saveImage(attachment, FileType.ATTACHMENT);
 

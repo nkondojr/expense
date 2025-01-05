@@ -138,7 +138,6 @@ For further details, please refer to the link: https://expense.ecu.co.tz/.`;
     }
   }
 
-
   // ***********************************************************************************************************************************************
   async findAll(
     searchTerm?: string,

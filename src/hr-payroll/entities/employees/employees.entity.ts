@@ -62,7 +62,7 @@ export class Employee {
     })
     title: EmployeeTitle;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, unique: true })
     userId: string;
 
     @ManyToOne(() => User, (user) => user.employeeInfo, {
