@@ -228,46 +228,44 @@ export class EmployeesService {
 
     if (searchTerm) {
       const searchTerms = searchTerm.trim().split(/\s+/); // Split search term into words
-      query
-        .where(
-          // Use concatenation to search across title and fullName together
-          `
-          CONCAT(employees.title, ' ', user.fullName) ILIKE :fullNames
-          OR employees.regNo ILIKE :searchTerm
-          OR employees.region ILIKE :searchTerm
-          OR employees.district ILIKE :searchTerm
-          OR employees.ward ILIKE :searchTerm
-          OR employees.street ILIKE :searchTerm
-          OR employees.maritalStatus ILIKE :searchTerm
-          OR employees.tin ILIKE :searchTerm
-          OR employees.regNumber ILIKE :searchTerm
-          OR employees.employeetype ILIKE :searchTerm
-          OR user.fullName ILIKE :searchTerm
-          OR user.mobile ILIKE :searchTerm
-          OR user.gender ILIKE :searchTerm
-          OR user.email ILIKE :searchTerm
-          `,
-          {
-            fullNames: `%${searchTerms.join(' ')}%`, // Match full name
-            searchTerm: `%${searchTerm}%`, // Match individual fields
-          },
-        )
+
+      query.where(
+        `
+        COALESCE(employees.title, '') || ' ' || COALESCE(user."fullName", '') ILIKE :fullNames
+        OR employees."regNumber" ILIKE :searchTerm
+        OR employees.region ILIKE :searchTerm
+        OR employees.district ILIKE :searchTerm
+        OR employees.ward ILIKE :searchTerm
+        OR employees.street ILIKE :searchTerm
+        OR employees."maritalStatus" ILIKE :searchTerm
+        OR CAST(employees.tin AS TEXT) ILIKE :searchTerm
+        OR employees."regNumber" ILIKE :searchTerm
+        OR employees."employmentType" ILIKE :searchTerm
+        OR user."fullName" ILIKE :searchTerm
+        OR user.mobile ILIKE :searchTerm
+        OR user.gender ILIKE :searchTerm
+        OR user.email ILIKE :searchTerm
+        `,
+        {
+          fullNames: `%${searchTerms.join(' ')}%`,
+          searchTerm: `%${searchTerm}%`,
+        },
+      )
         .orWhere("TO_CHAR(employees.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
           searchTerm: `%${searchTerm}%`,
         })
         .orWhere("TO_CHAR(employees.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
           searchTerm: `%${searchTerm}%`,
-        }
-        );
+        });
     }
 
-    // Apply pagination using the utility function
+    // Apply pagination
     paginate(query, page, pageSize);
 
     // Execute query and get results with count
     const [employees, total] = await query.getManyAndCount();
 
-    // Build the pagination response using the utility function
+    // Build the pagination response
     return buildPaginationResponse(employees, total, page, pageSize, '/hr-payroll/employees');
   }
 
