@@ -6,6 +6,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     Index,
+    JoinColumn,
 } from 'typeorm';
 import { Employee } from './employees.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -16,7 +17,14 @@ export class Allocation {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @ManyToOne(() => Employee, employee => employee.allocations, { onDelete: 'CASCADE' })
+    @Column({ nullable: false })
+    employeeId: string;
+
+    @ManyToOne(() => Employee, (employee) => employee.employeeBanks, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee;
 
     @Column({ type: 'varchar', length: 200 })

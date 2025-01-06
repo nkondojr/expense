@@ -2,6 +2,14 @@ import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, Primary
 import { Employee } from './employees.entity';
 import { User } from "src/users/entities/user.entity";
 
+export enum EndReason {
+    ENDOFCONTRACT = 'End Of Contract',
+    RESIGNATION = 'Resignation',
+    RETIREMENT = 'Retirement',
+    TERMINATION = 'Termination',
+    DEATH = 'Death'
+}
+
 @Entity('hr_employee_contract')
 @Index('IDX_CONTRACT_APPOINTMENT_DATE', ['appointmentDate'])
 @Index('IDX_CONTRACT_END_DATE', ['contractEndDate'])
@@ -10,7 +18,14 @@ export class Contract {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @ManyToOne(() => Employee, employee => employee.contracts, { onDelete: 'CASCADE' })
+    @Column({ nullable: false })
+    employeeId: string;
+
+    @ManyToOne(() => Employee, (employee) => employee.employeeBanks, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee;
 
     @Column({ type: 'date' })

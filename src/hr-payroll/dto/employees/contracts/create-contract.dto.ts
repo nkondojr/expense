@@ -1,4 +1,5 @@
-import { IsDate, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { EndReason } from 'src/hr-payroll/entities/employees/contracts.entity';
 
 export class CreateContractDto {
     @IsUUID()
@@ -17,9 +18,9 @@ export class CreateContractDto {
     @IsOptional()
     retirementDate?: Date;
 
-    @IsEnum(['End of Contract', 'Resignation', 'Retirement', 'Termination', 'Death'])
+    @IsEnum(EndReason)
     @IsOptional()
-    endOfContractReason?: string;
+    endOfContractReason: EndReason;
 
     @IsString()
     @IsOptional()

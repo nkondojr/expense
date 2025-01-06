@@ -21,6 +21,18 @@ import { Referee } from './entities/employees/referees.entity';
 import { User } from 'src/users/entities/user.entity';
 import { EmployeeBanksController } from './controllers/employees/banks.controller';
 import { EmployeeBanksService } from './services/employees/banks.service';
+import { AllocationsController } from './controllers/employees/allocations.controller';
+import { AllocationsService } from './services/employees/allocations.service';
+import { ContractsController } from './controllers/employees/contracts.controller';
+import { ContractsService } from './services/employees/contracts.service';
+import { QualificationsService } from './services/employees/qualifications.service';
+import { QualificationsController } from './controllers/employees/qualifications.controller';
+import { RefereesController } from './controllers/employees/next-of-kins.controller';
+import { RefereesService } from './services/employees/referees.service';
+import { WorkHistoryController } from './controllers/employees/work-histories.controller';
+import { WorkHistoryService } from './services/employees/work-histories.service';
+import { NextOfKinsController } from './controllers/employees/referees.controller copy';
+import { NextOfKinsService } from './services/employees/next-of-kins.service';
 
 @Module({
   imports: [
@@ -44,7 +56,25 @@ import { EmployeeBanksService } from './services/employees/banks.service';
     ]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
-  controllers: [EmployeesController, EmployeeBanksController],
-  providers: [EmployeesService, EmployeeBanksService],
+  controllers: [
+    EmployeesController,
+    EmployeeBanksController,
+    AllocationsController,
+    ContractsController,
+    QualificationsController,
+    RefereesController,
+    WorkHistoryController,
+    NextOfKinsController,
+  ],
+  providers: [
+    EmployeesService,
+    EmployeeBanksService,
+    AllocationsService,
+    ContractsService,
+    QualificationsService,
+    RefereesService,
+    WorkHistoryService,
+    NextOfKinsService,
+  ],
 })
 export class HrPayrollModule {}

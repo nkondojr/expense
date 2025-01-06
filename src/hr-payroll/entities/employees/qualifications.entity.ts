@@ -19,7 +19,14 @@ export class Qualification {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @ManyToOne(() => Employee, employee => employee.qualifications, { onDelete: 'CASCADE' })
+    @Column({ nullable: false })
+    employeeId: string;
+
+    @ManyToOne(() => Employee, (employee) => employee.employeeBanks, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
+    @JoinColumn({ name: 'employeeId' })
     employee: Employee;
 
     @Column({ type: 'enum', enum: QualificationType })
