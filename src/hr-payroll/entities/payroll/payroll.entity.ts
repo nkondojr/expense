@@ -14,20 +14,18 @@ export class Payroll {
     @Column({ length: 20, unique: true })
     number: string; // Payroll number
 
+    @Column({ type: 'date' })
+    date: Date;
+
     @ManyToOne(() => FinancialYear, { nullable: true })
     @JoinColumn({ name: 'financialYearId' })
     financialYear: FinancialYear; // Foreign key to FinancialYear entity
 
-    @ManyToMany(() => Employee)
-    @JoinTable({
-        name: 'payrollEmployees', // Many-to-many relation table
-        joinColumn: { name: 'payrollId', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'employeeId', referencedColumnName: 'id' },
+    @Index()
+    @ManyToOne(() => Employee, (employee) => employee.payrolls, {
+        onDelete: 'CASCADE',
     })
-    employees: Employee[]; // Many-to-many relationship with Employee entity
-
-    @Column('date')
-    date: string; // Payroll date
+    employee: Employee;
 
     @Column('decimal', { precision: 20, scale: 4, default: 0 })
     totalCost: string; // Total cost of payroll

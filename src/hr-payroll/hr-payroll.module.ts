@@ -33,6 +33,9 @@ import { WorkHistoryController } from './controllers/employees/work-histories.co
 import { WorkHistoryService } from './services/employees/work-histories.service';
 import { NextOfKinsController } from './controllers/employees/referees.controller copy';
 import { NextOfKinsService } from './services/employees/next-of-kins.service';
+import { PayrollsService } from './services/payroll/payroll.service';
+import { PayrollsController } from './controllers/payroll/payroll.controller';
+import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
 
 @Module({
   imports: [
@@ -53,6 +56,7 @@ import { NextOfKinsService } from './services/employees/next-of-kins.service';
       PayrollIndividual,
       PayrollAccount,
       User,
+      FinancialYear,
     ]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
@@ -65,6 +69,7 @@ import { NextOfKinsService } from './services/employees/next-of-kins.service';
     RefereesController,
     WorkHistoryController,
     NextOfKinsController,
+    PayrollsController,
   ],
   providers: [
     EmployeesService,
@@ -75,6 +80,7 @@ import { NextOfKinsService } from './services/employees/next-of-kins.service';
     RefereesService,
     WorkHistoryService,
     NextOfKinsService,
+    PayrollsService,
   ],
 })
 export class HrPayrollModule {}

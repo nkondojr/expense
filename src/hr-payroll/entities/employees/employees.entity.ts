@@ -18,6 +18,7 @@ import { Qualification } from './qualifications.entity';
 import { NextOfKin } from './next-of-kins.entity';
 import { WorkHistory } from './work-histories.entity';
 import { Individual } from '../payroll/individials.entity';
+import { Payroll } from '../payroll/payroll.entity';
 
 export enum IDType {
     NIDA = 'Nida',
@@ -176,6 +177,9 @@ export class Employee {
 
     @OneToMany(() => Individual, individuals => individuals.employee)
     individuals: Individual[];
+
+    @OneToMany(() => Payroll, payrolls => payrolls.employee)
+    payrolls: Payroll[];
 
     // getFullName(): string {
     //     return `${this.user.firstName} ${this.user.middleName || ''} ${this.user.lastName}`.trim();

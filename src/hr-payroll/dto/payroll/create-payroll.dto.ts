@@ -1,7 +1,6 @@
 import {
     IsArray,
     IsDateString,
-    IsDecimal,
     IsNotEmpty,
     IsOptional,
 } from 'class-validator';
@@ -12,9 +11,9 @@ export class CreatePayrollDto {
 
     @IsArray()
     @IsNotEmpty({ each: true }) // Ensures the array is not empty and each ID is provided
-    employeeIds: number[]; // Array of Employee IDs
+    employeeIds: string[]; // Array of Employee IDs
 
     @IsDateString()
     @IsNotEmpty()
-    date: string; // Payroll date in ISO format
+    date: Date; // Payroll date in ISO format
 }
