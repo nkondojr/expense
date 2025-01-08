@@ -60,7 +60,7 @@ export class PayrollsService {
       // Check if the employee exists
       const checkEmployee = await this.employeesRepository.findOne({
         where: { id: item.employeeId },
-        relations: ['employeeBanks'],
+        relations: ['allocations'],
       });
 
       if (!checkEmployee) {
@@ -114,17 +114,29 @@ export class PayrollsService {
       const savedPayroll = await this.payrollsRepository.save(newPayroll);
 
       // Create payroll items
-      const payrollItemsEntities = payrollItems.map((item) => {
+      const payrollItemsEntities = [];
+
+      for (const item of payrollItems) {
+        const employeeBank = checkEmployee.allocations.find(
+          (allocation) => allocation.isActive, // Assuming a field to determine active bank
+        );
+
+        if (!employeeBank) {
+          throw new BadRequestException(
+            `No active EmployeeBank found for employee ID ${item.employeeId}`,
+          );
+        }
+
         const payrollItem = new PayrollItem();
-        payrollItem.totalCost = item.totalCost;
-        payrollItem.grossSalary = item.grossSalary;
-        payrollItem.basicSalary = item.basicSalary;
-        payrollItem.taxableIncome = item.taxableIncome;
-        payrollItem.netSalary = item.netSalary;
+        payrollItem.totalCost = employeeBank.basicSalary;
+        payrollItem.grossSalary = employeeBank.basicSalary;
+        payrollItem.basicSalary = employeeBank.basicSalary; // Fetching from EmployeeBank
+        payrollItem.taxableIncome = employeeBank.basicSalary;
+        payrollItem.netSalary = employeeBank.basicSalary;
         payrollItem.payroll = savedPayroll;
         payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
-        return payrollItem;
-      });
+        payrollItemsEntities.push(payrollItem);
+      }
 
       // Save payroll items
       await this.payrollItemsRepository.save(payrollItemsEntities);

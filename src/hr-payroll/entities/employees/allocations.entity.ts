@@ -20,7 +20,7 @@ export class Allocation {
     @Column({ nullable: false })
     employeeId: string;
 
-    @ManyToOne(() => Employee, (employee) => employee.employeeBanks, {
+    @ManyToOne(() => Employee, (employee) => employee.allocations, {
         onDelete: 'CASCADE',
         nullable: false
     })
