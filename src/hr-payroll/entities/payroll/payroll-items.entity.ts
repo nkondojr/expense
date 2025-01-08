@@ -8,14 +8,6 @@ export class PayrollItem {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key
 
-    @Index()
-    @ManyToOne(() => Payroll, { nullable: true, onDelete: 'SET NULL' })
-    payroll: Payroll; // Foreign key to Payroll entity
-
-    @Index()
-    @ManyToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
-    employee: Employee; // Foreign key to Employee entity
-
     @Column('decimal', { precision: 20, scale: 4 })
     totalCost: string; // Total cost for the employee payroll item
 
@@ -36,4 +28,12 @@ export class PayrollItem {
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updatedAt: Date; // Updated timestamp
+
+    @Index()
+    @ManyToOne(() => Payroll, payroll => payroll.payrollItems, { onDelete: 'CASCADE' })
+    payroll: Payroll;
+
+    @Index()
+    @ManyToOne(() => Employee, { eager: true })  // Ensure employee is loaded eagerly
+    employee: Employee;
 }

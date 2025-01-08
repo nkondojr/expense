@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, JoinColumn, Index } from 'typeorm';
-import { Employee } from '../employees/employees.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, JoinColumn, Index, OneToMany } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
+import { PayrollItem } from './payroll-items.entity';
 
 @Entity('hr_payroll')
 @Index('payroll_status_index', ['status'])
@@ -20,12 +20,6 @@ export class Payroll {
     @ManyToOne(() => FinancialYear, { nullable: true })
     @JoinColumn({ name: 'financialYearId' })
     financialYear: FinancialYear; // Foreign key to FinancialYear entity
-
-    @Index()
-    @ManyToOne(() => Employee, (employee) => employee.payrolls, {
-        onDelete: 'CASCADE',
-    })
-    employee: Employee;
 
     @Column('decimal', { precision: 20, scale: 4, default: 0 })
     totalCost: string; // Total cost of payroll
@@ -60,6 +54,9 @@ export class Payroll {
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updatedAt: Date; // Updated timestamp
+
+    @OneToMany(() => PayrollItem, (payrollItems) => payrollItems.payroll)
+    payrollItems: PayrollItem[];
 
     // Generate payroll number logic (in service or before insert)
     static generatePayrollNumber(): string {

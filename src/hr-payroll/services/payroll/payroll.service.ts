@@ -8,12 +8,16 @@ import { Payroll } from 'src/hr-payroll/entities/payroll/payroll.entity';
 import { Employee } from 'src/hr-payroll/entities/employees/employees.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
 import { CreatePayrollDto } from 'src/hr-payroll/dto/payroll/create-payroll.dto';
+import { PayrollItem } from 'src/hr-payroll/entities/payroll/payroll-items.entity';
 
 @Injectable()
 export class PayrollsService {
   constructor(
     @InjectRepository(Payroll)
     private readonly payrollsRepository: Repository<Payroll>,
+
+    @InjectRepository(PayrollItem)
+    private readonly payrollItemsRepository: Repository<PayrollItem>,
 
     @InjectRepository(FinancialYear)
     private readonly financialYearsRepository: Repository<FinancialYear>,
@@ -25,18 +29,24 @@ export class PayrollsService {
 
   // ***********************************************************************************************************************************************
   async create(createPayrollDto: CreatePayrollDto): Promise<{ message: string }> {
-    const { date, financialYearId, employeeIds } = createPayrollDto;
+    const { date, financialYearId, payrollItems } = createPayrollDto;
+
+    if (!payrollItems || payrollItems.length === 0) {
+      throw new BadRequestException('Payroll items cannot be empty');
+    }
 
     // Ensure date is not in the past
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set time to the day for comparison
 
     if (new Date(date) > today) {
-      throw new BadRequestException('The date cannot be in the after today.');
+      throw new BadRequestException('The date cannot be after today.');
     }
 
     // Check if the financialYear exists
-    const checkFinancialYear = await this.financialYearsRepository.findOne({ where: { id: financialYearId } });
+    const checkFinancialYear = await this.financialYearsRepository.findOne({
+      where: { id: financialYearId },
+    });
 
     if (!checkFinancialYear) {
       throw new BadRequestException(`Financial year with ID: ${financialYearId} not found`);
@@ -46,51 +56,78 @@ export class PayrollsService {
       throw new BadRequestException(`Financial year with ID: ${financialYearId} is closed`);
     }
 
-    for (const employeeId of employeeIds) {
+    for (const item of payrollItems) {
       // Check if the employee exists
-      const checkEmployee = await this.employeesRepository.findOne({ where: { id: employeeId } });
+      const checkEmployee = await this.employeesRepository.findOne({
+        where: { id: item.employeeId },
+        relations: ['employeeBanks'],
+      });
 
       if (!checkEmployee) {
-        throw new BadRequestException(`Employee with ID: ${employeeId} not found`);
+        throw new BadRequestException(`Employee with ID: ${item.employeeId} not found`);
       }
 
       if (!checkEmployee.isActive) {
-        throw new BadRequestException(`Employee with ID: ${employeeId} is not active`);
+        throw new BadRequestException(`Employee with ID: ${item.employeeId} is not active`);
       }
 
-      // Check for existing date ranges
+      // Check for existing payroll within one month for the same employee
+      const oneMonthBefore = new Date(date);
+      oneMonthBefore.setMonth(oneMonthBefore.getMonth() - 1);
+
+      const oneMonthAfter = new Date(date);
+      oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
+
       const existingPayroll = await this.payrollsRepository
         .createQueryBuilder('payroll')
-        .where('payroll.financialYear = :financialYearId', { financialYearId })
-        .andWhere('payroll.employee = :employeeId', { employeeId })
-        .andWhere('payroll.date = :date', { date })
+        .leftJoinAndSelect('payroll.payrollItems', 'payrollItems')
+        .where('payrollItems.employeeId = :employeeId', { employeeId: item.employeeId })
+        .andWhere('payroll.date BETWEEN :oneMonthBefore AND :oneMonthAfter', {
+          oneMonthBefore,
+          oneMonthAfter,
+        })
         .getOne();
 
       if (existingPayroll) {
         throw new BadRequestException(
-          `Payroll for date ${date} and employee ID ${employeeId} already exists`,
+          `Payroll already exists within one month range for employee ID ${item.employeeId}`,
         );
       }
 
       // Generate the 'number' value
-      const [lastFarm] = await this.payrollsRepository.find({
+      const [lastPayroll] = await this.payrollsRepository.find({
         order: { createdAt: 'DESC' },
         take: 1,
       });
 
-      const newNumber = lastFarm
-        ? `PAYRL-${(parseInt(lastFarm.number.split('-')[1], 10) + 1).toString().padStart(4, '0')}`
+      const newNumber = lastPayroll
+        ? `PAYRL-${(parseInt(lastPayroll.number.split('-')[1], 10) + 1).toString().padStart(4, '0')}`
         : 'PAYRL-001';
 
       // Create and save a new Payroll entity
       const newPayroll = this.payrollsRepository.create({
         date,
         financialYear: checkFinancialYear,
-        employee: checkEmployee,
         number: newNumber,
       });
 
-      await this.payrollsRepository.save(newPayroll);
+      const savedPayroll = await this.payrollsRepository.save(newPayroll);
+
+      // Create payroll items
+      const payrollItemsEntities = payrollItems.map((item) => {
+        const payrollItem = new PayrollItem();
+        payrollItem.totalCost = item.totalCost;
+        payrollItem.grossSalary = item.grossSalary;
+        payrollItem.basicSalary = item.basicSalary;
+        payrollItem.taxableIncome = item.taxableIncome;
+        payrollItem.netSalary = item.netSalary;
+        payrollItem.payroll = savedPayroll;
+        payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
+        return payrollItem;
+      });
+
+      // Save payroll items
+      await this.payrollItemsRepository.save(payrollItemsEntities);
     }
 
     return {
