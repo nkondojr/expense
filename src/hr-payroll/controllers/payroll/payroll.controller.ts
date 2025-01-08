@@ -37,13 +37,13 @@ export class PayrollsController {
   }
 
   @Get('unpayed-employees')
-  async findUnassignedEmployees(
+  async findUnpayedEmployees(
     @Query('date') date: string,
   ) {
     if (!date) {
       throw new BadRequestException('date an are required');
     }
-    return this.payrollsService.findUnassignedEmployees(date);
+    return this.payrollsService.findUnpayedEmployees(date);
   }
 
   @Get(':uuid')

@@ -18,14 +18,14 @@ export class FinancialYearService {
         name: 'FY2024',
         startDate: '2024-01-01',
         endDate: '2024-12-31',
-        isClosed: false,
+        isClosed: true,
       },
       {
         id: 2,
         name: 'FY2025',
         startDate: '2025-01-01',
         endDate: '2025-12-31',
-        isClosed: true,
+        isClosed: false,
       }
     ];
 

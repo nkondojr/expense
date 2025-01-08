@@ -124,7 +124,7 @@ export class PayrollsService {
 
     const newNumber = lastPayroll
       ? `PAYRL-${(parseInt(lastPayroll.number.split('-')[1], 10) + 1).toString().padStart(4, '0')}`
-      : 'PAYRL-001';
+      : 'PAYRL-0001';
 
     // Create and save a new Payroll entity
     const newPayroll = this.payrollsRepository.create({
@@ -155,38 +155,20 @@ export class PayrollsService {
     const query = this.payrollsRepository
       .createQueryBuilder('payrolls')
       .leftJoin('payrolls.financialYear', 'financialYear')
-      .leftJoin('payrolls.employee', 'employee')
-      .leftJoin('employee.user', 'user')
       .select([
         'payrolls',
         'financialYear.name',
-        'employee.title',
-        'employee.tin',
-        'employee.regNumber',
-        'user.username',
-        'user.mobile',
-        'user.email',
       ]);
 
     if (searchTerm) {
-      query.where(
-        `employee.regNumber ILIKE :searchTerm
-          OR CAST(employee.tin AS TEXT) ILIKE :searchTerm
-          OR CAST(employee.title AS TEXT) ILIKE :searchTerm
-          OR user.username ILIKE :searchTerm
-          OR CAST(user.mobile AS TEXT) ILIKE :searchTerm
-          OR user.email ILIKE :searchTerm`,
+      query.where(`financialYear.name ILIKE :searchTerm`,
         {
           searchTerm: `%${searchTerm}%`,
         },
       )
         .orWhere("TO_CHAR(payrolls.date, 'DD-MM-YYYY') ILIKE :searchTerm", {
           searchTerm: `%${searchTerm}%`,
-        })
-        .orWhere(
-          `CONCAT(employee.title, ' ', user.username) ILIKE :searchTerm`,
-          { searchTerm: `%${searchTerm}%` },
-        );
+        });
     }
 
     // Apply pagination using the utility function
@@ -206,24 +188,25 @@ export class PayrollsService {
   }
 
   // ***********************************************************************************************************************************************
-  async findUnassignedEmployees(
-    date: string,
-  ): Promise<Employee[]> {
-
+  async findUnpayedEmployees(date: string): Promise<Employee[]> {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set time to the of the day for comparison
+    today.setHours(0, 0, 0, 0); // Set time to the start of the day for comparison
 
     // Validation: Return an empty array if date is in the past
     if (new Date(date) > today) {
       return [];
     }
 
-    const unassignedEmployees = await this.employeesRepository
+    const unpayedEmployees = await this.employeesRepository
       .createQueryBuilder('employee')
-      .leftJoin('employee.payrolls', 'payroll')
+      .leftJoin('employee.payrollItems', 'payrollItems')
+      .leftJoin('payrollItems.payroll', 'payroll')
       .leftJoin('employee.user', 'user')
-      .andWhere('payroll.date = :date', { date })
       .andWhere('employee.isActive = :isActive', { isActive: 'true' })
+      .andWhere(
+        'payroll.date IS NULL OR payroll.date < :date', // No payroll or payroll date before the selected date
+        { date }
+      )
       .select([
         'employee.id',
         'employee.title',
@@ -234,7 +217,7 @@ export class PayrollsService {
       ])
       .getMany();
 
-    return unassignedEmployees;
+    return unpayedEmployees;
   }
 
   // ***********************************************************************************************************************************************
@@ -244,9 +227,7 @@ export class PayrollsService {
     }
     const financialYear = await this.payrollsRepository.findOne({
       where: { id },
-      relations: [
-        'financialYear', 'employee'
-      ],
+      relations: ['financialYear', 'payrollItems', 'payrollItems.employee', 'payrollItems.employee.user'],
     });
     if (!financialYear) {
       throw new NotFoundException(`Payroll with ID: ${id} not found.`);
