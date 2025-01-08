@@ -52,10 +52,11 @@ export class PayrollsService {
       throw new BadRequestException(`Financial year with ID: ${financialYearId} not found`);
     }
 
-    if (!checkFinancialYear.isClosed) {
+    if (checkFinancialYear.isClosed) {
       throw new BadRequestException(`Financial year with ID: ${financialYearId} is closed`);
     }
 
+    const payrollItemsEntities = [];
     for (const item of payrollItems) {
       // Check if the employee exists
       const checkEmployee = await this.employeesRepository.findOne({
@@ -94,6 +95,25 @@ export class PayrollsService {
         );
       }
 
+      // Find the active employee allocation
+      const employeeAllocation = checkEmployee.allocations.find(
+        (allocation) => allocation.isActive, // Assuming a field to determine active bank
+      );
+
+      if (!employeeAllocation) {
+        throw new BadRequestException(
+          `No active EmployeeBank found for employee ID ${item.employeeId}`,
+        );
+      }
+
+      const payrollItem = new PayrollItem();
+      payrollItem.totalCost = employeeAllocation.basicSalary;
+      payrollItem.grossSalary = employeeAllocation.basicSalary;
+      payrollItem.basicSalary = employeeAllocation.basicSalary;
+      payrollItem.taxableIncome = employeeAllocation.basicSalary;
+      payrollItem.netSalary = employeeAllocation.basicSalary;
+      payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
+      payrollItemsEntities.push(payrollItem);
     }
 
     // Generate the 'number' value
@@ -113,32 +133,12 @@ export class PayrollsService {
       number: newNumber,
     });
 
-    // Create payroll items
-    const payrollItemsEntities = [];
+    const savedPayroll = await this.payrollsRepository.save(newPayroll);
 
-    for (const item of payrollItems) {
-      const employeeBank = checkEmployee.allocations.find(
-        (allocation) => allocation.isActive, // Assuming a field to determine active bank
-      );
-
-      if (!employeeBank) {
-        throw new BadRequestException(
-          `No active EmployeeBank found for employee ID ${item.employeeId}`,
-        );
-      }
-
-      const savedPayroll = await this.payrollsRepository.save(newPayroll);
-
-      const payrollItem = new PayrollItem();
-      payrollItem.totalCost = employeeAllocation.basicSalary;
-      payrollItem.grossSalary = employeeAllocation.basicSalary;
-      payrollItem.basicSalary = employeeAllocation.basicSalary; // Fetching from EmployeeAllocation
-      payrollItem.taxableIncome = employeeAllocation.basicSalary;
-      payrollItem.netSalary = employeeAllocation.basicSalary;
-      payrollItem.payroll = savedPayroll;
-      payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
-      payrollItemsEntities.push(payrollItem);
-    }
+    // Associate payroll items with the saved payroll
+    payrollItemsEntities.forEach((item) => {
+      item.payroll = savedPayroll;
+    });
 
     // Save payroll items
     await this.payrollItemsRepository.save(payrollItemsEntities);
