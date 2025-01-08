@@ -94,53 +94,54 @@ export class PayrollsService {
         );
       }
 
-      // Generate the 'number' value
-      const [lastPayroll] = await this.payrollsRepository.find({
-        order: { createdAt: 'DESC' },
-        take: 1,
-      });
+    }
 
-      const newNumber = lastPayroll
-        ? `PAYRL-${(parseInt(lastPayroll.number.split('-')[1], 10) + 1).toString().padStart(4, '0')}`
-        : 'PAYRL-001';
+    // Generate the 'number' value
+    const [lastPayroll] = await this.payrollsRepository.find({
+      order: { createdAt: 'DESC' },
+      take: 1,
+    });
 
-      // Create and save a new Payroll entity
-      const newPayroll = this.payrollsRepository.create({
-        date,
-        financialYear: checkFinancialYear,
-        number: newNumber,
-      });
+    const newNumber = lastPayroll
+      ? `PAYRL-${(parseInt(lastPayroll.number.split('-')[1], 10) + 1).toString().padStart(4, '0')}`
+      : 'PAYRL-001';
+
+    // Create and save a new Payroll entity
+    const newPayroll = this.payrollsRepository.create({
+      date,
+      financialYear: checkFinancialYear,
+      number: newNumber,
+    });
+
+    // Create payroll items
+    const payrollItemsEntities = [];
+
+    for (const item of payrollItems) {
+      const employeeBank = checkEmployee.allocations.find(
+        (allocation) => allocation.isActive, // Assuming a field to determine active bank
+      );
+
+      if (!employeeBank) {
+        throw new BadRequestException(
+          `No active EmployeeBank found for employee ID ${item.employeeId}`,
+        );
+      }
 
       const savedPayroll = await this.payrollsRepository.save(newPayroll);
 
-      // Create payroll items
-      const payrollItemsEntities = [];
-
-      for (const item of payrollItems) {
-        const employeeBank = checkEmployee.allocations.find(
-          (allocation) => allocation.isActive, // Assuming a field to determine active bank
-        );
-
-        if (!employeeBank) {
-          throw new BadRequestException(
-            `No active EmployeeBank found for employee ID ${item.employeeId}`,
-          );
-        }
-
-        const payrollItem = new PayrollItem();
-        payrollItem.totalCost = employeeBank.basicSalary;
-        payrollItem.grossSalary = employeeBank.basicSalary;
-        payrollItem.basicSalary = employeeBank.basicSalary; // Fetching from EmployeeBank
-        payrollItem.taxableIncome = employeeBank.basicSalary;
-        payrollItem.netSalary = employeeBank.basicSalary;
-        payrollItem.payroll = savedPayroll;
-        payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
-        payrollItemsEntities.push(payrollItem);
-      }
-
-      // Save payroll items
-      await this.payrollItemsRepository.save(payrollItemsEntities);
+      const payrollItem = new PayrollItem();
+      payrollItem.totalCost = employeeAllocation.basicSalary;
+      payrollItem.grossSalary = employeeAllocation.basicSalary;
+      payrollItem.basicSalary = employeeAllocation.basicSalary; // Fetching from EmployeeAllocation
+      payrollItem.taxableIncome = employeeAllocation.basicSalary;
+      payrollItem.netSalary = employeeAllocation.basicSalary;
+      payrollItem.payroll = savedPayroll;
+      payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
+      payrollItemsEntities.push(payrollItem);
     }
+
+    // Save payroll items
+    await this.payrollItemsRepository.save(payrollItemsEntities);
 
     return {
       message: 'Payroll created successfully',
