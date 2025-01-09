@@ -1,4 +1,3 @@
-// GeneralDeductionsService
 import { DataSource, Repository } from 'typeorm';
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,7 +28,21 @@ export class GeneralDeductionsService {
 
   // ***********************************************************************************************************************************************
   async getNextItemNumber(categoryType: string): Promise<string> {
-    const prefix = categoryType.toUpperCase();
+    let prefix: string;
+
+    switch (categoryType) {
+      case 'Employee Earning':
+        prefix = 'EARN';
+        break;
+      case 'Employee Statutory Deduction':
+        prefix = 'DED';
+        break;
+      case 'Employer Statutory Contribution':
+        prefix = 'CONTR';
+        break;
+      default:
+        throw new BadRequestException('Invalid category type');
+    }
 
     const lastItem = await this.dataSource
       .getRepository(GeneralDeduction)
@@ -40,11 +53,11 @@ export class GeneralDeductionsService {
 
     let nextNumber = 1;
     if (lastItem) {
-      const lastNumber = parseInt(lastItem.number.replace(prefix, ''), 10);
+      const lastNumber = parseInt(lastItem.number.replace(prefix + '-', ''), 10);
       nextNumber = lastNumber + 1;
     }
 
-    return `${prefix}${nextNumber.toString().padStart(4, '0')}`;
+    return `${prefix}-${nextNumber.toString().padStart(3, '0')}`;
   }
 
   // ***********************************************************************************************************************************************
@@ -133,8 +146,8 @@ export class GeneralDeductionsService {
       const payrollAccount = new PayrollAccount();
       payrollAccount.type = 'General';
       payrollAccount.general = savedGeneral;
-      payrollAccount.liabilityAccount = { uuid: item.liabilityAccountId } as any; // Assuming product entity is referenced by ID
-      payrollAccount.expenseAccount = { uuid: item.expenseAccountId } as any; // Assuming product entity is referenced by ID
+      payrollAccount.liabilityAccount = { uuid: item.liabilityAccountId } as any;
+      payrollAccount.expenseAccount = { uuid: item.expenseAccountId } as any;
       return payrollAccount;
     });
 
@@ -146,7 +159,10 @@ export class GeneralDeductionsService {
 
   // ***********************************************************************************************************************************************
   async findOne(id: string): Promise<GeneralDeduction> {
-    const generalDeduction = await this.generalDeductionsRepository.findOne({ where: { id } });
+    const generalDeduction = await this.generalDeductionsRepository.findOne({
+      where: { id },
+      relations: ['payrollGenerals', 'payrollAccounts'],
+    });
 
     if (!generalDeduction) {
       throw new NotFoundException(`General deduction with ID ${id} not found.`);

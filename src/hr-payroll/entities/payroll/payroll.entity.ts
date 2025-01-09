@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTabl
 import { User } from 'src/users/entities/user.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
 import { PayrollItem } from './payroll-items.entity';
+import { PayrollGeneral } from './payroll-general.entity';
 
 @Entity('hr_payroll')
 @Index('payroll_status_index', ['status'])
@@ -57,6 +58,9 @@ export class Payroll {
 
     @OneToMany(() => PayrollItem, (payrollItems) => payrollItems.payroll)
     payrollItems: PayrollItem[];
+
+    @OneToMany(() => PayrollGeneral, (payrollGenerals) => payrollGenerals.payroll)
+    payrollGenerals: PayrollGeneral[];
 
     // Generate payroll number logic (in service or before insert)
     static generatePayrollNumber(): string {

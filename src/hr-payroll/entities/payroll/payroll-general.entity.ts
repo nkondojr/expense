@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index, JoinColumn } from 'typeorm';
 import { Payroll } from './payroll.entity';
 import { Employee } from '../employees/employees.entity';
 import { GeneralDeduction } from './general-deductions.entity';
@@ -12,14 +12,36 @@ export class PayrollGeneral {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key
 
-    @ManyToOne(() => Payroll, { nullable: true, onDelete: 'SET NULL' })
-    payroll: Payroll; // Foreign key to Payroll entity
+    @Column({ nullable: false })
+    payrollId: string;
 
-    @ManyToOne(() => GeneralDeduction, { nullable: true, onDelete: 'SET NULL' })
-    general: GeneralDeduction; // Foreign key to GeneralDeduction entity
+    @ManyToOne(() => Payroll, (payroll) => payroll.payrollGenerals, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
+    @JoinColumn({ name: 'payrollId' })
+    payroll: Payroll;
 
-    @ManyToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
-    employee: Employee; // Foreign key to Employee entity
+    @Index()
+    @Column({ nullable: false })
+    generalId: string;
+
+    @ManyToOne(() => GeneralDeduction, (general) => general.payrollGenerals, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
+    @JoinColumn({ name: 'generalId' })
+    general: GeneralDeduction;
+
+    @Column({ nullable: false })
+    employeeId: string;
+
+    @ManyToOne(() => Employee, (employee) => employee.payrollGenerals, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
+    @JoinColumn({ name: 'employeeId' })
+    employee: Employee;
 
     @Column('decimal', { precision: 20, scale: 4 })
     amount: string; // Amount for payroll general

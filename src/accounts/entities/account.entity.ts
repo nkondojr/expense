@@ -21,6 +21,7 @@ import { PaymentAndReceipt } from './journals/payments-&-receipts/payment-&-rece
 import { BudgetItem } from './budgets/budget-item.entity';
 import { Length } from 'class-validator';
 import { Bank } from 'src/organizations/entities/banks/bank.entity';
+import { PayrollAccount } from 'src/hr-payroll/entities/payroll/payroll-accounts.entity';
 
 @Entity('accounts_account')
 export class Account {
@@ -113,4 +114,10 @@ export class Account {
 
   @OneToMany(() => BudgetItem, (budgetItem) => budgetItem.account)
   budgetItems: BudgetItem[];
+
+  @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.liabilityAccount)
+  payrollAccounts: PayrollAccount[];
+
+  @OneToMany(() => PayrollAccount, (payrollAccountss) => payrollAccountss.expenseAccount)
+  payrollAccountss: PayrollAccount[];
 }

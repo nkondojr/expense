@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index, OneToMany } from 'typeorm';
 import { Employee } from '../employees/employees.entity';
 import { User } from 'src/users/entities/user.entity';
 import { CalculatedFrom, DeductionNature } from './general-deductions.entity';
+import { PayrollAccount } from './payroll-accounts.entity';
 
 @Entity('hr_payroll_individual_deduction')
 export class IndividualDeduction {
@@ -54,6 +55,9 @@ export class IndividualDeduction {
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updatedAt: Date; // Updated timestamp
+
+    @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.individual)
+    payrollAccounts: PayrollAccount[];
 
     // Optional: Additional logic for default permissions can be handled via guards or roles in NestJS
 }

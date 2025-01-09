@@ -13,21 +13,35 @@ export class PayrollAccount {
     @Column({ length: 30, enum: ['General', 'Individual'] })
     type: 'General' | 'Individual'; // Type of deduction account
 
-    @OneToOne(() => GeneralDeduction, { nullable: true })
+    @Index()
+    @Column({ nullable: false })
+    generalId: string;
+
+    @ManyToOne(() => GeneralDeduction, (general) => general.payrollAccounts, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
     @JoinColumn({ name: 'generalId' })
-    general: GeneralDeduction; // One-to-one relationship with deduction (for general deduction)
+    general: GeneralDeduction;
 
-    @OneToOne(() => IndividualDeduction, { nullable: true })
+    @Index()
+    @Column({ nullable: false })
+    individualId: string;
+
+    @ManyToOne(() => IndividualDeduction, (individual) => individual.payrollAccounts, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
     @JoinColumn({ name: 'individualId' })
-    individual: IndividualDeduction; // One-to-one relationship with Individual (for individual deduction)
+    individual: IndividualDeduction;
 
-    @ManyToOne(() => Account, { nullable: true })
-    @JoinColumn({ name: 'liabilityAccountId' })
-    liabilityAccount: Account; // Foreign key to Account for liability account
+    @Index()
+    @ManyToOne(() => Account, { eager: true })  // Ensure product is loaded eagerly
+    liabilityAccount: Account;
 
-    @ManyToOne(() => Account, { nullable: true })
-    @JoinColumn({ name: 'expenseAccountId' })
-    expenseAccount: Account; // Foreign key to Account for expense account
+    @Index()
+    @ManyToOne(() => Account, { eager: true })  // Ensure product is loaded eagerly
+    expenseAccount: Account;
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date; // Created timestamp

@@ -7,8 +7,11 @@ import {
     UpdateDateColumn,
     ManyToOne,
     JoinColumn,
-    Index
+    Index,
+    OneToMany
 } from 'typeorm';
+import { PayrollGeneral } from './payroll-general.entity';
+import { PayrollAccount } from './payroll-accounts.entity';
 
 export enum DeductionType {
     EMPLOYEE_EARNING = 'Employee Earning',
@@ -76,4 +79,10 @@ export class GeneralDeduction {
 
     @UpdateDateColumn({ name: 'updatedAt' })
     updatedAt: Date;
+
+    @OneToMany(() => PayrollGeneral, (payrollGenerals) => payrollGenerals.general)
+    payrollGenerals: PayrollGeneral[];
+
+    @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.general)
+    payrollAccounts: PayrollAccount[];
 }
