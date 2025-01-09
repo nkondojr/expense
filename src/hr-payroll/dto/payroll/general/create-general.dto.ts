@@ -1,7 +1,12 @@
-import { IsDecimal, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
-import { DeductionType, TransactionType, DeductionNature, CalculatedFrom  } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { Type } from 'class-transformer';
+import { IsArray, IsDecimal, IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { DeductionType, TransactionType, DeductionNature, CalculatedFrom } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { CreatePayrollAccountDto } from '../accounts/create-payroll-account.dto';
 
 export class CreateGeneralDeductionDto {
+    @IsEmpty()
+    number: string;
+
     @IsString()
     @MaxLength(100)
     @IsNotEmpty()
@@ -27,11 +32,9 @@ export class CreateGeneralDeductionDto {
     @IsOptional()
     calculateFrom?: CalculatedFrom; // Deduction calculation base (optional)
 
-    @IsInt()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreatePayrollAccountDto)
     @IsNotEmpty()
-    liabilityAccountId: number; // Foreign key to Account entity
-
-    @IsInt()
-    @IsNotEmpty()
-    expenseAccountId: number; // Foreign key to Account entity
+    payrollAccounts: CreatePayrollAccountDto[];
 }
