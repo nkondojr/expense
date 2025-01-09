@@ -30,10 +30,10 @@ import { NextOfKin } from './hr-payroll/entities/employees/next-of-kins.entity';
 import { Qualification } from './hr-payroll/entities/employees/qualifications.entity';
 import { Payroll } from './hr-payroll/entities/payroll/payroll.entity';
 import { PayrollItem } from './hr-payroll/entities/payroll/payroll-items.entity';
-import { General } from './hr-payroll/entities/payroll/generals.entity';
-import { PayrollGeneral } from './hr-payroll/entities/payroll/general-deductions.entity';
-import { Individual } from './hr-payroll/entities/payroll/individials.entity';
-import { PayrollIndividual } from './hr-payroll/entities/payroll/individual-deductions.entity';
+import { GeneralDeduction } from './hr-payroll/entities/payroll/general-deductions.entity';
+import { PayrollGeneral } from './hr-payroll/entities/payroll/payroll-general.entity';
+import { IndividualDeduction } from './hr-payroll/entities/payroll/individial-deductions.entity';
+import { PayrollIndividual } from './hr-payroll/entities/payroll/payroll-individual.entity';
 import { PayrollAccount } from './hr-payroll/entities/payroll/payroll-accounts.entity';
 import { EmployeeBank } from './hr-payroll/entities/employees/banks.entity';
 import { Referee } from './hr-payroll/entities/employees/referees.entity';
@@ -94,9 +94,9 @@ import { AccountsModule } from './accounts/accounts.module';
           Referee,
           Payroll,
           PayrollItem,
-          General,
+          GeneralDeduction,
           PayrollGeneral,
-          Individual,
+          IndividualDeduction,
           PayrollIndividual,
           PayrollAccount,
           FinancialYear,

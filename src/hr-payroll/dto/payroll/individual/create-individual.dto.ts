@@ -1,5 +1,5 @@
 import { IsDateString, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
-import { CalculatedFrom, DeductionNature } from 'src/hr-payroll/entities/payroll/generals.entity';
+import { CalculatedFrom, DeductionNature } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 
 export class CreateIndividualDeductionDto {
     @IsString()

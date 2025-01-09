@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn, Index } from 'typeorm';
-import { General } from './generals.entity';
-import { Individual } from './individials.entity';
+import { GeneralDeduction } from './general-deductions.entity';
+import { IndividualDeduction } from './individial-deductions.entity';
 import { Account } from 'src/accounts/entities/account.entity';
 
 @Entity('hr_payroll_account')
@@ -13,13 +13,13 @@ export class PayrollAccount {
     @Column({ length: 30, enum: ['General', 'Individual'] })
     type: 'General' | 'Individual'; // Type of deduction account
 
-    @OneToOne(() => General, { nullable: true })
+    @OneToOne(() => GeneralDeduction, { nullable: true })
     @JoinColumn({ name: 'generalId' })
-    general: General; // One-to-one relationship with deduction (for general deduction)
+    general: GeneralDeduction; // One-to-one relationship with deduction (for general deduction)
 
-    @OneToOne(() => Individual, { nullable: true })
+    @OneToOne(() => IndividualDeduction, { nullable: true })
     @JoinColumn({ name: 'individualId' })
-    individual: Individual; // One-to-one relationship with Individual (for individual deduction)
+    individual: IndividualDeduction; // One-to-one relationship with Individual (for individual deduction)
 
     @ManyToOne(() => Account, { nullable: true })
     @JoinColumn({ name: 'liabilityAccountId' })

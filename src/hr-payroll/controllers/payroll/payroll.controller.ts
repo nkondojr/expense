@@ -36,6 +36,16 @@ export class PayrollsController {
     return this.payrollsService.findAll(searchParams);
   }
 
+  @Get('general-earning-deductions')
+  async getAllGeneralDeductions(
+    @Query('search') search?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ): Promise<any> {
+    const searchParams = new SearchParams(search, page, pageSize);
+    return this.payrollsService.findAllGeneralDeductions(searchParams);
+  }
+
   @Get('unpayed-employees')
   async findUnpayedEmployees(
     @Query('date') date: string,
@@ -46,8 +56,8 @@ export class PayrollsController {
     return this.payrollsService.findUnpayedEmployees(date);
   }
 
-  @Get(':uuid')
-  async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
-    return await this.payrollsService.findOne(uuid);
+  @Get(':id')
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.payrollsService.findOne(id);
   }
 }

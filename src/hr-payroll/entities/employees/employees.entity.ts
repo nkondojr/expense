@@ -17,7 +17,7 @@ import { EmployeeBank } from './banks.entity';
 import { Qualification } from './qualifications.entity';
 import { NextOfKin } from './next-of-kins.entity';
 import { WorkHistory } from './work-histories.entity';
-import { Individual } from '../payroll/individials.entity';
+import { IndividualDeduction } from '../payroll/individial-deductions.entity';
 import { PayrollItem } from '../payroll/payroll-items.entity';
 
 export enum IDType {
@@ -175,8 +175,8 @@ export class Employee {
     @OneToMany(() => WorkHistory, workHistories => workHistories.employee)
     workHistories: WorkHistory[];
 
-    @OneToMany(() => Individual, individuals => individuals.employee)
-    individuals: Individual[];
+    @OneToMany(() => IndividualDeduction, individuals => individuals.employee)
+    individuals: IndividualDeduction[];
 
     @OneToMany(() => PayrollItem, payrollItems => payrollItems.employee)
     payrollItems: PayrollItem[];

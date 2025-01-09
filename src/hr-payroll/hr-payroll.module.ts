@@ -10,12 +10,12 @@ import { NextOfKin } from './entities/employees/next-of-kins.entity';
 import { Qualification } from './entities/employees/qualifications.entity';
 import { Payroll } from './entities/payroll/payroll.entity';
 import { PayrollAccount } from './entities/payroll/payroll-accounts.entity';
-import { PayrollGeneral } from './entities/payroll/general-deductions.entity';
-import { Individual } from './entities/payroll/individials.entity';
-import { PayrollIndividual } from './entities/payroll/individual-deductions.entity';
+import { PayrollGeneral } from './entities/payroll/payroll-general.entity';
+import { IndividualDeduction } from './entities/payroll/individial-deductions.entity';
+import { PayrollIndividual } from './entities/payroll/payroll-individual.entity';
 import { PayrollItem } from './entities/payroll/payroll-items.entity';
 import { WorkHistory } from './entities/employees/work-histories.entity';
-import { General } from './entities/payroll/generals.entity';
+import { GeneralDeduction } from './entities/payroll/general-deductions.entity';
 import { EmployeeBank } from './entities/employees/banks.entity';
 import { Referee } from './entities/employees/referees.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -36,6 +36,8 @@ import { NextOfKinsService } from './services/employees/next-of-kins.service';
 import { PayrollsService } from './services/payroll/payroll.service';
 import { PayrollsController } from './controllers/payroll/payroll.controller';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
+import { GeneralDeductionsController } from './controllers/payroll/general-deductions.controller';
+import { GeneralDeductionsService } from './services/payroll/general-deductions.service';
 
 @Module({
   imports: [
@@ -50,9 +52,9 @@ import { FinancialYear } from 'src/organizations/entities/financial-years/financ
       Referee,
       Payroll,
       PayrollItem,
-      General,
+      GeneralDeduction,
       PayrollGeneral,
-      Individual,
+      IndividualDeduction,
       PayrollIndividual,
       PayrollAccount,
       User,
@@ -70,6 +72,7 @@ import { FinancialYear } from 'src/organizations/entities/financial-years/financ
     WorkHistoryController,
     NextOfKinsController,
     PayrollsController,
+    GeneralDeductionsController,
   ],
   providers: [
     EmployeesService,
@@ -81,6 +84,7 @@ import { FinancialYear } from 'src/organizations/entities/financial-years/financ
     WorkHistoryService,
     NextOfKinsService,
     PayrollsService,
+    GeneralDeductionsService,
   ],
 })
 export class HrPayrollModule {}

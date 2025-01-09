@@ -1,32 +1,79 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
-import { Payroll } from './payroll.entity';
-import { General } from './generals.entity';
-import { Employee } from '../employees/employees.entity';
+import { User } from 'src/users/entities/user.entity';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    ManyToOne,
+    JoinColumn,
+    Index
+} from 'typeorm';
+
+export enum DeductionType {
+    EMPLOYEE_EARNING = 'Employee Earning',
+    EMPLOYEE_STATUTORY_DEDUCTION = 'Employee Statutory Deduction',
+    EMPLOYER_STATUTORY_CONTRIBUTION = 'Employer Statutory Contribution'
+}
+
+export enum DeductionNature {
+    CONSTANT = 'Constant',
+    PERCENTAGE = 'Percentage'
+}
+
+export enum TransactionType {
+    NORMAL = 'Normal',
+    PENSION = 'Pension',
+    TAX = 'Tax'
+}
+
+export enum CalculatedFrom {
+    BASIC_SALARY = 'Basic Salary',
+    GROSS_SALARY = 'Gross Salary',
+    TAXABLE_INCOME = 'Taxable Income'
+}
 
 @Entity('hr_payroll_general_deduction')
-@Index('general_index', ['general'])
-@Index('employee_index', ['employee'])
-@Index('payroll_index', ['payroll'])
-export class PayrollGeneral {
-
+@Index(['createdAt'])
+export class GeneralDeduction {
     @PrimaryGeneratedColumn('uuid')
-    id: string; // UUID primary key
+    id: string;
 
-    @ManyToOne(() => Payroll, { nullable: true, onDelete: 'SET NULL' })
-    payroll: Payroll; // Foreign key to Payroll entity
+    @Column({ length: 50 })
+    number: string;
 
-    @ManyToOne(() => General, { nullable: true, onDelete: 'SET NULL' })
-    general: General; // Foreign key to General entity
+    @Column({ length: 100, unique: true })
+    name: string;
 
-    @ManyToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
-    employee: Employee; // Foreign key to Employee entity
+    @Column({ type: 'enum', enum: DeductionType })
+    type: DeductionType;
 
-    @Column('decimal', { precision: 20, scale: 4 })
-    amount: string; // Amount for payroll general
+    @Column({ type: 'enum', enum: TransactionType })
+    transactionType: TransactionType;
 
-    @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date; // Created timestamp
+    @Column({ type: 'enum', enum: DeductionNature })
+    nature: DeductionNature;
 
-    @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-    updatedAt: Date; // Updated timestamp
+    @Column({ type: 'decimal', precision: 10, scale: 4 })
+    value: string;
+
+    @Column({ type: 'enum', enum: CalculatedFrom, nullable: true })
+    calculateFrom: CalculatedFrom;
+
+    @Column({ default: true })
+    isActive: boolean;
+
+    @ManyToOne(() => User, { nullable: true })
+    @JoinColumn({ name: 'createdBy' })
+    createdBy: User;
+
+    @ManyToOne(() => User, { nullable: true })
+    @JoinColumn({ name: 'updatedBy' })
+    updatedBy: User;
+
+    @CreateDateColumn({ name: 'createdAt' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ name: 'updatedAt' })
+    updatedAt: Date;
 }

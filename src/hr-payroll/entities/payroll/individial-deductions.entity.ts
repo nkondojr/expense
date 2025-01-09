@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Employee } from '../employees/employees.entity';
 import { User } from 'src/users/entities/user.entity';
-import { CalculatedFrom, DeductionNature } from './generals.entity';
+import { CalculatedFrom, DeductionNature } from './general-deductions.entity';
 
-@Entity('hr_payroll_individual')
-export class Individual {
+@Entity('hr_payroll_individual_deduction')
+export class IndividualDeduction {
 
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key

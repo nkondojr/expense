@@ -9,6 +9,7 @@ import { Employee } from 'src/hr-payroll/entities/employees/employees.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
 import { CreatePayrollDto } from 'src/hr-payroll/dto/payroll/create-payroll.dto';
 import { PayrollItem } from 'src/hr-payroll/entities/payroll/payroll-items.entity';
+import { GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 
 @Injectable()
 export class PayrollsService {
@@ -24,6 +25,9 @@ export class PayrollsService {
 
     @InjectRepository(Employee)
     private readonly employeesRepository: Repository<Employee>,
+
+    @InjectRepository(GeneralDeduction)
+    private readonly generalDeductionsRepository: Repository<GeneralDeduction>,
 
   ) { }
 
@@ -185,6 +189,23 @@ export class PayrollsService {
       pageSize,
       '/payrolls',
     );
+  }
+
+  // ***********************************************************************************************************************************************
+  async findAllGeneralDeductions(searchParams: SearchParams): Promise<any> {
+    const { searchTerm, page, pageSize } = searchParams;
+
+    const query = this.generalDeductionsRepository.createQueryBuilder('generalDeduction');
+
+    if (searchTerm) {
+      query.where('generalDeduction.name ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+    }
+
+    paginate(query, page, pageSize);
+
+    const [generalDeductions, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(generalDeductions, total, page, pageSize, '/general-deductions');
   }
 
   // ***********************************************************************************************************************************************

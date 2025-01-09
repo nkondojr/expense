@@ -1,5 +1,5 @@
 import { IsDecimal, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
-import { DeductionType, TransactionType, DeductionNature, CalculatedFrom  } from 'src/hr-payroll/entities/payroll/generals.entity';
+import { DeductionType, TransactionType, DeductionNature, CalculatedFrom  } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 
 export class CreateGeneralDeductionDto {
     @IsString()
