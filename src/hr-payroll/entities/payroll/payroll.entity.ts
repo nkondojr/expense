@@ -48,7 +48,7 @@ export class Payroll {
     paidAt: string; // Date when payroll was paid
 
     @Column('date', { nullable: true })
-    approvedAt: string; // Date when payroll was approved
+    approvedAt: Date; // Date when payroll was approved
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date; // Created timestamp

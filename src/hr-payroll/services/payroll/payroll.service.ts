@@ -9,8 +9,10 @@ import { Employee } from 'src/hr-payroll/entities/employees/employees.entity';
 import { FinancialYear } from 'src/organizations/entities/financial-years/financial-year.entity';
 import { CreatePayrollDto } from 'src/hr-payroll/dto/payroll/create-payroll.dto';
 import { PayrollItem } from 'src/hr-payroll/entities/payroll/payroll-items.entity';
-import { GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { CalculatedFrom, DeductionNature, GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 import { IndividualDeduction } from 'src/hr-payroll/entities/payroll/individial-deductions.entity';
+import { Transaction, TransactionType } from 'src/accounts/entities/transaction.entity';
+import { Nature } from 'src/accounts/entities/class.entity';
 
 @Injectable()
 export class PayrollsService {
@@ -32,6 +34,9 @@ export class PayrollsService {
 
     @InjectRepository(IndividualDeduction)
     private readonly individualDeductionsRepository: Repository<IndividualDeduction>,
+
+    @InjectRepository(Transaction)
+    private readonly transactionsRepository: Repository<Transaction>,
 
   ) { }
 
@@ -115,11 +120,6 @@ export class PayrollsService {
       }
 
       const payrollItem = new PayrollItem();
-      payrollItem.totalCost = employeeAllocation.basicSalary;
-      payrollItem.grossSalary = employeeAllocation.basicSalary;
-      payrollItem.basicSalary = employeeAllocation.basicSalary;
-      payrollItem.taxableIncome = employeeAllocation.basicSalary;
-      payrollItem.netSalary = employeeAllocation.basicSalary;
       payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
       payrollItemsEntities.push(payrollItem);
     }
@@ -326,5 +326,130 @@ export class PayrollsService {
       throw new NotFoundException(`Payroll with ID: ${id} not found.`);
     }
     return financialYear;
+  }
+
+  // ***********************************************************************************************************************************************
+  calculatePayeValue(amount: number): number {
+    const value = new Decimal(amount);
+    if (value.gt(1000000)) {
+      return new Decimal(128000).plus(value.minus(1000000).times(0.3)).toNumber();
+    } else if (value.gt(760000)) {
+      return new Decimal(68000).plus(value.minus(760000).times(0.25)).toNumber();
+    } else if (value.gt(520000)) {
+      return new Decimal(20000).plus(value.minus(520000).times(0.2)).toNumber();
+    } else if (value.gt(270000)) {
+      return value.minus(270000).times(0.08).toNumber();
+    } else {
+      return 0;
+    }
+  }
+
+  private async calculateDeductions(
+    employee: Employee,
+    basicSalary: number,
+    grossSalary: number,
+    taxableIncome: number,
+    deductions: GeneralDeduction[],
+    payroll: Payroll,
+  ): Promise<{
+    totalValue: number;
+    transactions: Transaction[];
+    individualDeductions: any[];
+    generalDeductions: any[];
+  }> {
+    let totalValue = 0;
+    const transactions: Transaction[] = [];
+    const individualDeductions = [];
+    const generalDeductions = [];
+
+    for (const deduction of deductions) {
+      let amount = 0;
+      const calculateFromValue =
+        deduction.calculateFrom === CalculatedFrom.BASIC_SALARY
+          ? basicSalary
+          : deduction.calculateFrom === CalculatedFrom.GROSS_SALARY
+          ? grossSalary
+          : taxableIncome;
+
+      if (deduction.nature === DeductionNature.CONSTANT) {
+        amount = Number(deduction.value);
+      } else {
+        amount = calculateFromValue * (Number(deduction.value) / 100);
+      }
+
+      totalValue += amount;
+
+      // Group deductions and prepare transactions
+      if (deduction.employee) {
+        individualDeductions.push({
+          payroll,
+          employee,
+          amount,
+        });
+      } else {
+        generalDeductions.push({
+          payroll,
+          deduction,
+          amount,
+          employee,
+        });
+      }
+
+      transactions.push(
+        new Transaction({
+          account: deduction.liabilityAccount,
+          nature: Nature.CREDITOR,
+          type: TransactionType.PAYROLL,
+          amount,
+          date: payroll.date,
+        }),
+        new Transaction({
+          account: deduction.expenseAccount,
+          nature: Nature.DEBITOR,
+          type: TransactionType.PAYROLL,
+          amount,
+          date: payroll.date,
+        }),
+      );
+    }
+
+    return { totalValue, transactions, individualDeductions, generalDeductions };
+  }
+
+  async approvePayroll(payrollId: string, approvalDate: Date): Promise<void> {
+    const payroll = await this.payrollsRepository.findOne({
+      where: { id: payrollId },
+      relations: ['employees'],
+    });
+    if (!payroll) {
+      throw new BadRequestException('Payroll not found');
+    }
+
+    payroll.status = 'Approved';
+    payroll.approvedAt = approvalDate;
+
+    const deductions = await this.generalDeductionsRepository.find({ where: { isActive: true } });
+
+    for (const employee of payroll.employees) {
+      const basicSalary = employee.basicSalary || 0;
+      const grossSalary = basicSalary; // Adjust as per business logic
+      const taxableIncome = grossSalary; // Adjust as needed
+
+      const { totalValue, transactions } = await this.calculateDeductions(
+        employee,
+        basicSalary,
+        grossSalary,
+        taxableIncome,
+        deductions,
+        payroll,
+      );
+
+      payroll.totalAmount += totalValue;
+
+      // Save transactions
+      await this.transactionsRepository.save(transactions);
+    }
+
+    await this.payrollsRepository.save(payroll);
   }
 }

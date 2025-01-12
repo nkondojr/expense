@@ -8,19 +8,19 @@ export class PayrollItem {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID primary key
 
-    @Column('decimal', { precision: 20, scale: 4 })
+    @Column('decimal', { precision: 20, scale: 4, default: 0 })
     totalCost: string; // Total cost for the employee payroll item
 
-    @Column('decimal', { precision: 20, scale: 4 })
+    @Column('decimal', { precision: 20, scale: 4, default: 0 })
     grossSalary: string; // Gross salary
 
-    @Column('decimal', { precision: 20, scale: 4 })
+    @Column('decimal', { precision: 20, scale: 4, default: 0 })
     basicSalary: string; // Basic salary
 
-    @Column('decimal', { precision: 20, scale: 4 })
+    @Column('decimal', { precision: 20, scale: 4, default: 0 })
     taxableIncome: string; // Taxable income
 
-    @Column('decimal', { precision: 20, scale: 4 })
+    @Column('decimal', { precision: 20, scale: 4, default: 0 })
     netSalary: string; // Net salary
 
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
