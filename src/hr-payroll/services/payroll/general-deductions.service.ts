@@ -1,5 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
-import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 import { CreateGeneralDeductionDto } from 'src/hr-payroll/dto/payroll/general/create-general.dto';
@@ -70,51 +70,41 @@ export class GeneralDeductionsService {
 
     // Check if a general deduction with the same name exists
     const existingDeduction = await this.generalDeductionsRepository.findOne({ where: { name } });
-
     if (existingDeduction) {
-      throw new BadRequestException(`General deduction with name ${name} already exists.`);
+      throw new BadRequestException(`General deduction with name "${name}" already exists.`);
     }
 
-    const invalidUUIDs = payrollAccounts.filter((item) => !isUUID(item.liabilityAccountId));
-    if (invalidUUIDs.length > 0) {
-      throw new UnprocessableEntityException(
-        `Invalid ID format for account IDs: ${invalidUUIDs.map((item) => item.liabilityAccountId).join(', ')}`,
-      );
-    }
-
-    // Validate account existence for each general item
+    // Validate liability and expense accounts and map payroll accounts
+    const payrollAccountsEntities: PayrollAccount[] = [];
     for (const item of payrollAccounts) {
-      const account = await this.accountsRepository.findOne({
-        where: { uuid: item.liabilityAccountId },
-      });
-      if (!account) {
-        throw new NotFoundException(
-          `Liability account with id ${item.liabilityAccountId} not found`,
-        );
+      if (!isUUID(item.liabilityAccountId)) {
+        throw new UnprocessableEntityException(`Invalid UUID format for liabilityAccountId: ${item.liabilityAccountId}`);
       }
-    }
-
-    const invalidUUIDss = payrollAccounts.filter((item) => !isUUID(item.expenseAccountId));
-    if (invalidUUIDss.length > 0) {
-      throw new UnprocessableEntityException(
-        `Invalid ID format for account IDs: ${invalidUUIDss.map((item) => item.expenseAccountId).join(', ')}`,
-      );
-    }
-
-    // Validate account existence for each general item
-    for (const item of payrollAccounts) {
-      const account = await this.accountsRepository.findOne({
-        where: { uuid: item.expenseAccountId },
-      });
-      if (!account) {
-        throw new NotFoundException(
-          `Expense account with id ${item.expenseAccountId} not found`,
-        );
+      if (!isUUID(item.expenseAccountId)) {
+        throw new UnprocessableEntityException(`Invalid UUID format for expenseAccountId: ${item.expenseAccountId}`);
       }
+
+      const liabilityAccount = await this.accountsRepository.findOne({ where: { uuid: item.liabilityAccountId } });
+      if (!liabilityAccount) {
+        throw new NotFoundException(`Liability account with id "${item.liabilityAccountId}" not found`);
+      }
+
+      const expenseAccount = await this.accountsRepository.findOne({ where: { uuid: item.expenseAccountId } });
+      if (!expenseAccount) {
+        throw new NotFoundException(`Expense account with id "${item.expenseAccountId}" not found`);
+      }
+
+      const payrollAccount = new PayrollAccount();
+      payrollAccount.type = 'General';
+      payrollAccount.liabilityAccount = liabilityAccount;
+      payrollAccount.expenseAccount = expenseAccount;
+      payrollAccountsEntities.push(payrollAccount);
     }
 
+    // Generate the next general deduction number
     const number = await this.getNextItemNumber(type);
 
+    // Create the general deduction entity
     const generalDeduction = this.generalDeductionsRepository.create({
       name,
       type,
@@ -125,43 +115,27 @@ export class GeneralDeductionsService {
       number,
     });
 
-    // Save the general
-    const savedGeneral = await this.generalDeductionsRepository.save(generalDeduction);
+    try {
+      // Save the general deduction
+      const savedGeneral = await this.generalDeductionsRepository.save(generalDeduction);
 
-    const payrollGenerals = [];
+      // Associate saved general deduction with payroll accounts and save
+      payrollAccountsEntities.forEach((account) => (account.general = savedGeneral));
+      await this.payrollAccountsRepository.save(payrollAccountsEntities);
 
-    // Create general items
-    const payrollGeneralsEntities = payrollGenerals.map((item) => {
-      const payrollGeneral = new PayrollGeneral();
-      payrollGeneral.amount = value;
-      payrollGeneral.general = savedGeneral;
-      return payrollGeneral;
-    });
-
-    // Save general items
-    await this.payrollGeneralsRepository.save(payrollGeneralsEntities);
-
-    // Create general items
-    const payrollAccountsEntities = payrollAccounts.map((item) => {
-      const payrollAccount = new PayrollAccount();
-      payrollAccount.type = 'General';
-      payrollAccount.general = savedGeneral;
-      payrollAccount.liabilityAccount = { uuid: item.liabilityAccountId } as any;
-      payrollAccount.expenseAccount = { uuid: item.expenseAccountId } as any;
-      return payrollAccount;
-    });
-
-    // Save general items
-    await this.payrollAccountsRepository.save(payrollAccountsEntities);
-
-    return { message: 'General deduction created successfully' };
+      return { message: 'General deduction created successfully' };
+    } catch (error) {
+      // Log the error and rethrow for debugging or error handling
+      console.error('Error while creating general deduction:', error);
+      throw new InternalServerErrorException('Failed to create general deduction');
+    }
   }
 
   // ***********************************************************************************************************************************************
   async findOne(id: string): Promise<GeneralDeduction> {
     const generalDeduction = await this.generalDeductionsRepository.findOne({
       where: { id },
-      relations: ['payrollGenerals', 'payrollAccounts'],
+      relations: ['payrollAccounts'],
     });
 
     if (!generalDeduction) {

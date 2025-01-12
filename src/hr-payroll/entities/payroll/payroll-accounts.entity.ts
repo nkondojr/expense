@@ -14,23 +14,23 @@ export class PayrollAccount {
     type: 'General' | 'Individual'; // Type of deduction account
 
     @Index()
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     generalId: string;
 
     @ManyToOne(() => GeneralDeduction, (general) => general.payrollAccounts, {
         onDelete: 'CASCADE',
-        nullable: false
+        nullable: true
     })
     @JoinColumn({ name: 'generalId' })
     general: GeneralDeduction;
 
     @Index()
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     individualId: string;
 
     @ManyToOne(() => IndividualDeduction, (individual) => individual.payrollAccounts, {
         onDelete: 'CASCADE',
-        nullable: false
+        nullable: true
     })
     @JoinColumn({ name: 'individualId' })
     individual: IndividualDeduction;
