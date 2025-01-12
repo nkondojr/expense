@@ -41,6 +41,7 @@ import { GeneralDeductionsService } from './services/payroll/general-deductions.
 import { Account } from 'src/accounts/entities/account.entity';
 import { IndividualDeductionsService } from './services/payroll/individual-deductions.service';
 import { IndividualDeductionsController } from './controllers/payroll/individual-deductions.controller';
+import { Transaction } from 'src/accounts/entities/transaction.entity';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { IndividualDeductionsController } from './controllers/payroll/individual
       User,
       FinancialYear,
       Account,
+      Transaction,
     ]),
     forwardRef(() => AuthenticationModule), // Import AuthenticationModule
   ],
