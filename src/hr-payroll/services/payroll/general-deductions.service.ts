@@ -1,7 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeductionNature, GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { CalculatedFrom, DeductionNature, DeductionType, GeneralDeduction, TransactionType } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 import { CreateGeneralDeductionDto } from 'src/hr-payroll/dto/payroll/general/create-general.dto';
 import { isUUID } from 'class-validator';
 import { Account } from 'src/accounts/entities/account.entity';
@@ -72,14 +72,29 @@ export class GeneralDeductionsService {
     // Check if a general deduction with the same name exists
     const existingDeduction = await this.generalDeductionsRepository.findOne({ where: { name } });
     if (existingDeduction) {
-      throw new BadRequestException(`General deduction with name "${name}" already exists.`);
+      throw new BadRequestException(`General deduction with name ${name} already exists.`);
     }
 
     const value = parseFloat(createGeneralDeductionDto.value);
 
     // Validate the "nature" field and its value
-    if (nature === DeductionNature.PERCENTAGE && value > 100) {
-      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
+    if (nature === DeductionNature.PERCENTAGE) {
+      if (value > 100) {
+        throw new BadRequestException(`Value cannot exceed '100' when nature is 'Percentage'.`);
+      }
+      if (!calculateFrom) {
+        throw new BadRequestException(`The 'calculateFrom' field is required when nature is 'Percentage'.`);
+      }
+    }
+
+    // Validate the "type" field and its value
+    if (type === DeductionType.EMPLOYEE_EARNING && nature === DeductionNature.PERCENTAGE) {
+      throw new BadRequestException(`For type 'Employee Earning', nature must only be a constant value.`);
+    }
+
+    // Validate the "transactionType" field and its value
+    if (transactionType === TransactionType.PENSION && calculateFrom === CalculatedFrom.TAXABLE_INCOME) {
+      throw new BadRequestException(`For transaction type 'Pension', calculate from should be one of '${CalculatedFrom.BASIC_SALARY}' or '${CalculatedFrom.GROSS_SALARY}'.`);
     }
 
     // Validate liability and expense accounts and map payroll accounts
@@ -163,22 +178,37 @@ export class GeneralDeductionsService {
     // Check if the deduction exists
     const existingDeduction = await this.generalDeductionsRepository.findOne({ where: { id } });
     if (!existingDeduction) {
-      throw new NotFoundException(`General deduction with id "${id}" not found.`);
+      throw new NotFoundException(`General deduction with id ${id} not found.`);
     }
 
     // Check if the name is being updated and already exists
     if (name && name !== existingDeduction.name) {
       const nameConflict = await this.generalDeductionsRepository.findOne({ where: { name } });
       if (nameConflict) {
-        throw new BadRequestException(`General deduction with name "${name}" already exists.`);
+        throw new BadRequestException(`General deduction with name ${name} already exists.`);
       }
     }
 
     const value = parseFloat(updateGeneralDeductionDto.value);
 
     // Validate the "nature" field and its value
-    if (nature === DeductionNature.PERCENTAGE && value > 100) {
-      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
+    if (nature === DeductionNature.PERCENTAGE) {
+      if (value > 100) {
+        throw new BadRequestException(`Value cannot exceed '100' when nature is 'Percentage'.`);
+      }
+      if (!calculateFrom) {
+        throw new BadRequestException(`The 'calculateFrom' field is required when nature is 'Percentage'.`);
+      }
+    }
+
+    // Validate the "type" field and its value
+    if (type === DeductionType.EMPLOYEE_EARNING && nature === DeductionNature.PERCENTAGE) {
+      throw new BadRequestException(`For type 'Employee Earning', nature must only be a constant value.`);
+    }
+
+    // Validate the "transactionType" field and its value
+    if (transactionType === TransactionType.PENSION && calculateFrom === CalculatedFrom.TAXABLE_INCOME) {
+      throw new BadRequestException(`For transaction type 'Pension', calculate from should be one of '${CalculatedFrom.BASIC_SALARY}' or '${CalculatedFrom.GROSS_SALARY}'.`);
     }
 
     // Validate and update payroll accounts if provided

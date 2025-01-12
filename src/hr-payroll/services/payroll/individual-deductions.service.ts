@@ -9,7 +9,7 @@ import { PayrollIndividual } from 'src/hr-payroll/entities/payroll/payroll-indiv
 import { UpdateIndividualDeductionDto } from 'src/hr-payroll/dto/payroll/individual/update-individual.dto';
 import { CreateIndividualDeductionDto } from 'src/hr-payroll/dto/payroll/individual/create-individual.dto';
 import { Employee } from 'src/hr-payroll/entities/employees/employees.entity';
-import { DeductionNature } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { CalculatedFrom, DeductionNature, DeductionType } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 
 @Injectable()
 export class IndividualDeductionsService {
@@ -74,14 +74,24 @@ export class IndividualDeductionsService {
     // Check if a individual deduction with the same name exists
     const existingDeduction = await this.individualDeductionsRepository.findOne({ where: { name } });
     if (existingDeduction) {
-      throw new BadRequestException(`Individual deduction with name "${name}" already exists.`);
+      throw new BadRequestException(`Individual deduction with name ${name} already exists.`);
     }
 
     const value = parseFloat(createIndividualDeductionDto.value);
 
     // Validate the "nature" field and its value
-    if (nature === DeductionNature.PERCENTAGE && value > 100) {
-      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
+    if (nature === DeductionNature.PERCENTAGE) {
+      if (value > 100) {
+        throw new BadRequestException(`Value cannot exceed '100' when nature is 'Percentage'.`);
+      }
+      if (!calculateFrom) {
+        throw new BadRequestException(`The 'calculateFrom' field is required when nature is 'Percentage'.`);
+      }
+    }
+
+    // Validate the "type" field and its value
+    if (type === DeductionType.EMPLOYEE_EARNING && nature === DeductionNature.PERCENTAGE) {
+      throw new BadRequestException(`For type 'Employee Earning', nature must only be a constant value.`);
     }
 
     // Check if the employee exists
@@ -181,22 +191,32 @@ export class IndividualDeductionsService {
     // Check if the deduction exists
     const existingDeduction = await this.individualDeductionsRepository.findOne({ where: { id } });
     if (!existingDeduction) {
-      throw new NotFoundException(`Individual deduction with id "${id}" not found.`);
+      throw new NotFoundException(`Individual deduction with id ${id} not found.`);
     }
 
     // Check if the name is being updated and already exists
     if (name && name !== existingDeduction.name) {
       const nameConflict = await this.individualDeductionsRepository.findOne({ where: { name } });
       if (nameConflict) {
-        throw new BadRequestException(`Individual deduction with name "${name}" already exists.`);
+        throw new BadRequestException(`Individual deduction with name ${name} already exists.`);
       }
     }
 
     const value = parseFloat(updateIndividualDeductionDto.value);
 
     // Validate the "nature" field and its value
-    if (nature === DeductionNature.PERCENTAGE && value > 100) {
-      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
+    if (nature === DeductionNature.PERCENTAGE) {
+      if (value > 100) {
+        throw new BadRequestException(`Value cannot exceed '100' when nature is 'Percentage'.`);
+      }
+      if (!calculateFrom) {
+        throw new BadRequestException(`The 'calculateFrom' field is required when nature is 'Percentage'.`);
+      }
+    }
+
+    // Validate the "type" field and its value
+    if (type === DeductionType.EMPLOYEE_EARNING && nature === DeductionNature.PERCENTAGE) {
+      throw new BadRequestException('For type "Employee Earning", nature must only be a constant value.');
     }
 
     // Check if the employee exists
