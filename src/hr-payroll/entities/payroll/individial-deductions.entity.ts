@@ -17,9 +17,15 @@ export class IndividualDeduction {
     name: string; // Deduction name
 
     @Index()
-    @ManyToOne(() => Employee, employee => employee.individuals)
+    @Column({ nullable: false })
+    employeeId: string;
+
+    @ManyToOne(() => Employee, (employee) => employee.individuals, {
+        onDelete: 'CASCADE',
+        nullable: false
+    })
     @JoinColumn({ name: 'employeeId' })
-    employee: Employee; // Foreign key to Employee entity
+    employee: Employee;
 
     @Column('decimal', { precision: 10, scale: 4 })
     value: string; // Deduction value

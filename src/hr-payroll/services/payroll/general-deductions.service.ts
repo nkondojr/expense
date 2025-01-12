@@ -7,6 +7,7 @@ import { isUUID } from 'class-validator';
 import { Account } from 'src/accounts/entities/account.entity';
 import { PayrollGeneral } from 'src/hr-payroll/entities/payroll/payroll-general.entity';
 import { PayrollAccount } from 'src/hr-payroll/entities/payroll/payroll-accounts.entity';
+import { UpdateGeneralDeductionDto } from 'src/hr-payroll/dto/payroll/general/update-general.dto';
 
 @Injectable()
 export class GeneralDeductionsService {
@@ -143,5 +144,95 @@ export class GeneralDeductionsService {
     }
 
     return generalDeduction;
+  }
+
+  // ***********************************************************************************************************************************************
+  async update(
+    id: string,
+    updateGeneralDeductionDto: UpdateGeneralDeductionDto
+  ): Promise<{ message: string }> {
+    const { name, type, transactionType, nature, value, calculateFrom, payrollAccounts } = updateGeneralDeductionDto;
+
+    // Check if the deduction exists
+    const existingDeduction = await this.generalDeductionsRepository.findOne({ where: { id } });
+    if (!existingDeduction) {
+      throw new NotFoundException(`General deduction with id "${id}" not found.`);
+    }
+
+    // Check if the name is being updated and already exists
+    if (name && name !== existingDeduction.name) {
+      const nameConflict = await this.generalDeductionsRepository.findOne({ where: { name } });
+      if (nameConflict) {
+        throw new BadRequestException(`General deduction with name "${name}" already exists.`);
+      }
+    }
+
+    // Validate and update payroll accounts if provided
+    if (payrollAccounts && payrollAccounts.length > 0) {
+      const payrollAccountsEntities: PayrollAccount[] = [];
+      for (const item of payrollAccounts) {
+        if (!isUUID(item.liabilityAccountId)) {
+          throw new UnprocessableEntityException(`Invalid UUID format for liabilityAccountId: ${item.liabilityAccountId}`);
+        }
+        if (!isUUID(item.expenseAccountId)) {
+          throw new UnprocessableEntityException(`Invalid UUID format for expenseAccountId: ${item.expenseAccountId}`);
+        }
+
+        const liabilityAccount = await this.accountsRepository.findOne({ where: { uuid: item.liabilityAccountId } });
+        if (!liabilityAccount) {
+          throw new NotFoundException(`Liability account with id "${item.liabilityAccountId}" not found`);
+        }
+
+        const expenseAccount = await this.accountsRepository.findOne({ where: { uuid: item.expenseAccountId } });
+        if (!expenseAccount) {
+          throw new NotFoundException(`Expense account with id "${item.expenseAccountId}" not found`);
+        }
+
+        const payrollAccount = new PayrollAccount();
+        payrollAccount.type = 'General';
+        payrollAccount.general = existingDeduction;
+        payrollAccount.liabilityAccount = liabilityAccount;
+        payrollAccount.expenseAccount = expenseAccount;
+        payrollAccountsEntities.push(payrollAccount);
+      }
+
+      // Update payroll accounts by first removing old ones and then saving new ones
+      await this.payrollAccountsRepository.delete({ general: existingDeduction });
+      await this.payrollAccountsRepository.save(payrollAccountsEntities);
+    }
+
+    // Update the general deduction entity
+    Object.assign(existingDeduction, {
+      name,
+      type,
+      transactionType,
+      nature,
+      value,
+      calculateFrom,
+    });
+
+    await this.generalDeductionsRepository.save(existingDeduction);
+
+    return { message: 'General deduction updated successfully' };
+  }
+
+  // ***********************************************************************************************************************************************
+  async toggleGeneralStatus(id: string): Promise<{ message: string }> {
+    // Validate the UUID format
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid UUID format');
+    }
+
+    const general = await this.generalDeductionsRepository.findOne({ where: { id } });
+    if (!general) {
+      throw new NotFoundException(`General deduction with ID ${id} not found`);
+    }
+
+    // Toggle the isActive status
+    general.isActive = !general.isActive;
+    await this.generalDeductionsRepository.save(general);
+
+    const state = general.isActive ? 'activated' : 'deactivated';
+    return { message: `General deduction ${state} successfully` };
   }
 }

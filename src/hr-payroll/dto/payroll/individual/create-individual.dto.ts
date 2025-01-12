@@ -1,5 +1,7 @@
-import { IsDateString, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsDateString, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator';
 import { CalculatedFrom, DeductionNature } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { CreatePayrollAccountDto } from '../accounts/create-payroll-account.dto';
 
 export class CreateIndividualDeductionDto {
     @IsString()
@@ -7,9 +9,9 @@ export class CreateIndividualDeductionDto {
     @IsNotEmpty()
     name: string; // Deduction name
 
-    @IsInt()
+    @IsUUID()
     @IsNotEmpty()
-    employeeId: number; // Foreign key to Employee entity
+    employeeId: string;
 
     @IsDecimal({ decimal_digits: '1,4', force_decimal: true })
     @IsNotEmpty()
@@ -35,11 +37,9 @@ export class CreateIndividualDeductionDto {
     @IsNotEmpty()
     calculateFrom: CalculatedFrom; // Deduction calculation base
 
-    @IsInt()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreatePayrollAccountDto)
     @IsNotEmpty()
-    liabilityAccountId: number; // Foreign key to Account entity
-
-    @IsInt()
-    @IsNotEmpty()
-    expenseAccountId: number; // Foreign key to Account entity
+    payrollAccounts: CreatePayrollAccountDto[];
 }

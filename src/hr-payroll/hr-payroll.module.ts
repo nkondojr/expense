@@ -39,6 +39,8 @@ import { FinancialYear } from 'src/organizations/entities/financial-years/financ
 import { GeneralDeductionsController } from './controllers/payroll/general-deductions.controller';
 import { GeneralDeductionsService } from './services/payroll/general-deductions.service';
 import { Account } from 'src/accounts/entities/account.entity';
+import { IndividualDeductionsService } from './services/payroll/individual-deductions.service';
+import { IndividualDeductionsController } from './controllers/payroll/individual-deductions.controller';
 
 @Module({
   imports: [
@@ -75,6 +77,7 @@ import { Account } from 'src/accounts/entities/account.entity';
     NextOfKinsController,
     PayrollsController,
     GeneralDeductionsController,
+    IndividualDeductionsController,
   ],
   providers: [
     EmployeesService,
@@ -87,6 +90,7 @@ import { Account } from 'src/accounts/entities/account.entity';
     NextOfKinsService,
     PayrollsService,
     GeneralDeductionsService,
+    IndividualDeductionsService,
   ],
 })
 export class HrPayrollModule {}
