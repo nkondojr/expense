@@ -9,6 +9,7 @@ import { PayrollIndividual } from 'src/hr-payroll/entities/payroll/payroll-indiv
 import { UpdateIndividualDeductionDto } from 'src/hr-payroll/dto/payroll/individual/update-individual.dto';
 import { CreateIndividualDeductionDto } from 'src/hr-payroll/dto/payroll/individual/create-individual.dto';
 import { Employee } from 'src/hr-payroll/entities/employees/employees.entity';
+import { DeductionNature } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 
 @Injectable()
 export class IndividualDeductionsService {
@@ -64,7 +65,7 @@ export class IndividualDeductionsService {
 
   // ***********************************************************************************************************************************************
   async create(createIndividualDeductionDto: CreateIndividualDeductionDto): Promise<{ message: string }> {
-    const { name, type, deductionPeriod, effectiveDate, nature, value, calculateFrom, employeeId, payrollAccounts } = createIndividualDeductionDto;
+    const { name, type, deductionPeriod, effectiveDate, nature, calculateFrom, employeeId, payrollAccounts } = createIndividualDeductionDto;
 
     if (!payrollAccounts || payrollAccounts.length === 0) {
       throw new BadRequestException('Payroll accounts cannot be empty');
@@ -74,6 +75,13 @@ export class IndividualDeductionsService {
     const existingDeduction = await this.individualDeductionsRepository.findOne({ where: { name } });
     if (existingDeduction) {
       throw new BadRequestException(`Individual deduction with name "${name}" already exists.`);
+    }
+
+    const value = parseFloat(createIndividualDeductionDto.value);
+
+    // Validate the "nature" field and its value
+    if (nature === DeductionNature.PERCENTAGE && value > 100) {
+      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
     }
 
     // Check if the employee exists
@@ -127,7 +135,7 @@ export class IndividualDeductionsService {
       effectiveDate,
       deductionPeriod,
       nature,
-      value,
+      value: value.toString(),
       calculateFrom,
       employeeId,
       number,
@@ -168,7 +176,7 @@ export class IndividualDeductionsService {
     id: string,
     updateIndividualDeductionDto: UpdateIndividualDeductionDto
   ): Promise<{ message: string }> {
-    const { name, type, deductionPeriod, effectiveDate, nature, value, calculateFrom, employeeId, payrollAccounts } = updateIndividualDeductionDto;
+    const { name, type, deductionPeriod, effectiveDate, nature, calculateFrom, employeeId, payrollAccounts } = updateIndividualDeductionDto;
 
     // Check if the deduction exists
     const existingDeduction = await this.individualDeductionsRepository.findOne({ where: { id } });
@@ -182,6 +190,13 @@ export class IndividualDeductionsService {
       if (nameConflict) {
         throw new BadRequestException(`Individual deduction with name "${name}" already exists.`);
       }
+    }
+
+    const value = parseFloat(updateIndividualDeductionDto.value);
+
+    // Validate the "nature" field and its value
+    if (nature === DeductionNature.PERCENTAGE && value > 100) {
+      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
     }
 
     // Check if the employee exists
@@ -238,7 +253,7 @@ export class IndividualDeductionsService {
       deductionPeriod,
       effectiveDate,
       nature,
-      value,
+      value: value.toString(),
       calculateFrom,
       employeeId,
     });

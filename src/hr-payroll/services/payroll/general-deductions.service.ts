@@ -1,7 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { DeductionNature, GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
 import { CreateGeneralDeductionDto } from 'src/hr-payroll/dto/payroll/general/create-general.dto';
 import { isUUID } from 'class-validator';
 import { Account } from 'src/accounts/entities/account.entity';
@@ -63,7 +63,7 @@ export class GeneralDeductionsService {
 
   // ***********************************************************************************************************************************************
   async create(createGeneralDeductionDto: CreateGeneralDeductionDto): Promise<{ message: string }> {
-    const { name, type, transactionType, nature, value, calculateFrom, payrollAccounts } = createGeneralDeductionDto;
+    const { name, type, transactionType, nature, calculateFrom, payrollAccounts } = createGeneralDeductionDto;
 
     if (!payrollAccounts || payrollAccounts.length === 0) {
       throw new BadRequestException('Payroll accounts cannot be empty');
@@ -73,6 +73,13 @@ export class GeneralDeductionsService {
     const existingDeduction = await this.generalDeductionsRepository.findOne({ where: { name } });
     if (existingDeduction) {
       throw new BadRequestException(`General deduction with name "${name}" already exists.`);
+    }
+
+    const value = parseFloat(createGeneralDeductionDto.value);
+
+    // Validate the "nature" field and its value
+    if (nature === DeductionNature.PERCENTAGE && value > 100) {
+      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
     }
 
     // Validate liability and expense accounts and map payroll accounts
@@ -111,7 +118,7 @@ export class GeneralDeductionsService {
       type,
       transactionType,
       nature,
-      value,
+      value: value.toString(),
       calculateFrom,
       number,
     });
@@ -151,7 +158,7 @@ export class GeneralDeductionsService {
     id: string,
     updateGeneralDeductionDto: UpdateGeneralDeductionDto
   ): Promise<{ message: string }> {
-    const { name, type, transactionType, nature, value, calculateFrom, payrollAccounts } = updateGeneralDeductionDto;
+    const { name, type, transactionType, nature, calculateFrom, payrollAccounts } = updateGeneralDeductionDto;
 
     // Check if the deduction exists
     const existingDeduction = await this.generalDeductionsRepository.findOne({ where: { id } });
@@ -165,6 +172,13 @@ export class GeneralDeductionsService {
       if (nameConflict) {
         throw new BadRequestException(`General deduction with name "${name}" already exists.`);
       }
+    }
+
+    const value = parseFloat(updateGeneralDeductionDto.value);
+
+    // Validate the "nature" field and its value
+    if (nature === DeductionNature.PERCENTAGE && value > 100) {
+      throw new BadRequestException('Value cannot exceed 100 when nature is "Percentage".');
     }
 
     // Validate and update payroll accounts if provided
@@ -207,7 +221,7 @@ export class GeneralDeductionsService {
       type,
       transactionType,
       nature,
-      value,
+      value: value.toString(),
       calculateFrom,
     });
 
