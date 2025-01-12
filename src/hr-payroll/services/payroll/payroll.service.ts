@@ -10,6 +10,7 @@ import { FinancialYear } from 'src/organizations/entities/financial-years/financ
 import { CreatePayrollDto } from 'src/hr-payroll/dto/payroll/create-payroll.dto';
 import { PayrollItem } from 'src/hr-payroll/entities/payroll/payroll-items.entity';
 import { GeneralDeduction } from 'src/hr-payroll/entities/payroll/general-deductions.entity';
+import { IndividualDeduction } from 'src/hr-payroll/entities/payroll/individial-deductions.entity';
 
 @Injectable()
 export class PayrollsService {
@@ -28,6 +29,9 @@ export class PayrollsService {
 
     @InjectRepository(GeneralDeduction)
     private readonly generalDeductionsRepository: Repository<GeneralDeduction>,
+
+    @InjectRepository(IndividualDeduction)
+    private readonly individualDeductionsRepository: Repository<IndividualDeduction>,
 
   ) { }
 
@@ -206,6 +210,74 @@ export class PayrollsService {
     const [generalDeductions, total] = await query.getManyAndCount();
 
     return buildPaginationResponse(generalDeductions, total, page, pageSize, '/general-deductions');
+  }
+
+  // ***********************************************************************************************************************************************
+  async findAllIndividualDeductions(searchParams: SearchParams): Promise<any> {
+    const { searchTerm, page, pageSize } = searchParams;
+
+    const query = this.individualDeductionsRepository
+      .createQueryBuilder('individualDeductions')
+      .leftJoinAndSelect('individualDeductions.employee', 'employee')
+      .leftJoinAndSelect('employee.user', 'user')
+      .select([
+        'individualDeductions',
+        'employee.title',
+        'employee.tin',
+        'employee.regNumber',
+        'user.username',
+        'user.mobile',
+        'user.email',
+      ]);
+
+    if (searchTerm) {
+      query.where(
+        `employee.regNumber ILIKE :searchTerm
+          OR CAST(employee.tin AS TEXT) ILIKE :searchTerm
+          OR CAST(employee.placeOfBirth AS TEXT) ILIKE :searchTerm
+          OR CAST(employee.employmentNumber AS TEXT) ILIKE :searchTerm
+          OR CAST(employee.maritalStatus AS TEXT) ILIKE :searchTerm
+          OR CAST(employee.pensionNumber AS TEXT) ILIKE :searchTerm
+          OR employee.district ILIKE :searchTerm
+          OR CAST(employee.idNumber AS TEXT) ILIKE :searchTerm
+          OR employee.ward ILIKE :searchTerm
+          OR employee.street ILIKE :searchTerm
+          OR CAST(employee.idType AS TEXT) ILIKE :searchTerm
+          OR CAST(employee.employmentType AS TEXT) ILIKE :searchTerm
+          OR CAST(employee.title AS TEXT) ILIKE :searchTerm
+          OR CAST(individualDeductions.name AS TEXT) ILIKE :searchTerm
+          OR CAST(individualDeductions.value AS TEXT) ILIKE :searchTerm
+          OR CAST(individualDeductions.number AS TEXT) ILIKE :searchTerm
+          OR CAST(individualDeductions.deductionPeriod AS TEXT) ILIKE :searchTerm
+          OR CAST(individualDeductions.calculateFrom AS TEXT) ILIKE :searchTerm
+          OR CAST(individualDeductions.nature AS TEXT) ILIKE :searchTerm
+          OR user.username ILIKE :searchTerm
+          OR CAST(user.mobile AS TEXT) ILIKE :searchTerm
+          OR user.email ILIKE :searchTerm`,
+        {
+          searchTerm: `%${searchTerm}%`,
+        },
+      )
+        .orWhere("TO_CHAR(employee.dob, 'DD-MM-YYYY') ILIKE :searchTerm", {
+          searchTerm: `%${searchTerm}%`,
+        })
+        .orWhere("TO_CHAR(employee.employmentDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
+          searchTerm: `%${searchTerm}%`,
+        })
+        .orWhere("TO_CHAR(individualDeductions.effectiveDate, 'DD-MM-YYYY') ILIKE :searchTerm", {
+          searchTerm: `%${searchTerm}%`,
+        })
+        .orWhere(
+          `CONCAT(employee.title, ' ', user.username) ILIKE :searchTerm`,
+          { searchTerm: `%${searchTerm}%` },
+        );
+    }
+
+    paginate(query, page, pageSize);
+
+    const [individualDeductions, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(individualDeductions, total, page, pageSize, '/individual-deductions');
   }
 
   // ***********************************************************************************************************************************************

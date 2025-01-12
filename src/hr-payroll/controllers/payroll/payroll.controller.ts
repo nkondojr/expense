@@ -46,6 +46,16 @@ export class PayrollsController {
     return this.payrollsService.findAllGeneralDeductions(searchParams);
   }
 
+  @Get('individual-earning-deductions')
+  async getAllIndividualDeductions(
+    @Query('search') search?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ): Promise<any> {
+    const searchParams = new SearchParams(search, page, pageSize);
+    return this.payrollsService.findAllIndividualDeductions(searchParams);
+  }
+
   @Get('unpayed-employees')
   async findUnpayedEmployees(
     @Query('date') date: string,

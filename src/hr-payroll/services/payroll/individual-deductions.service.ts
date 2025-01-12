@@ -39,11 +39,8 @@ export class IndividualDeductionsService {
       case 'Employee Earning':
         prefix = 'EARN';
         break;
-      case 'Employee Statutory Deduction':
+      case 'Employee Deduction':
         prefix = 'DED';
-        break;
-      case 'Employer Statutory Contribution':
-        prefix = 'CONTR';
         break;
       default:
         throw new BadRequestException('Invalid category type');
@@ -88,8 +85,8 @@ export class IndividualDeductionsService {
       throw new BadRequestException(`Employee with ID: ${employeeId} not found`);
     }
 
-    if (checkEmployee.isActive) {
-      throw new BadRequestException(`Employee with ID: ${employeeId} is closed`);
+    if (!checkEmployee.isActive) {
+      throw new BadRequestException(`Employee with ID: ${employeeId} not active`);
     }
 
 
@@ -156,7 +153,7 @@ export class IndividualDeductionsService {
   async findOne(id: string): Promise<IndividualDeduction> {
     const individualDeduction = await this.individualDeductionsRepository.findOne({
       where: { id },
-      relations: ['payrollAccounts'],
+      relations: ['payrollAccounts', 'employee', 'employee.user'],
     });
 
     if (!individualDeduction) {
@@ -171,7 +168,7 @@ export class IndividualDeductionsService {
     id: string,
     updateIndividualDeductionDto: UpdateIndividualDeductionDto
   ): Promise<{ message: string }> {
-    const { name, type, deductionPeriod, effectiveDate, nature, value, calculateFrom, payrollAccounts } = updateIndividualDeductionDto;
+    const { name, type, deductionPeriod, effectiveDate, nature, value, calculateFrom, employeeId, payrollAccounts } = updateIndividualDeductionDto;
 
     // Check if the deduction exists
     const existingDeduction = await this.individualDeductionsRepository.findOne({ where: { id } });
@@ -185,6 +182,19 @@ export class IndividualDeductionsService {
       if (nameConflict) {
         throw new BadRequestException(`Individual deduction with name "${name}" already exists.`);
       }
+    }
+
+    // Check if the employee exists
+    const checkEmployee = await this.employeesRepository.findOne({
+      where: { id: employeeId },
+    });
+
+    if (!checkEmployee) {
+      throw new BadRequestException(`Employee with ID: ${employeeId} not found`);
+    }
+
+    if (!checkEmployee.isActive) {
+      throw new BadRequestException(`Employee with ID: ${employeeId} not active`);
     }
 
     // Validate and update payroll accounts if provided
@@ -230,6 +240,7 @@ export class IndividualDeductionsService {
       nature,
       value,
       calculateFrom,
+      employeeId,
     });
 
     await this.individualDeductionsRepository.save(existingDeduction);
