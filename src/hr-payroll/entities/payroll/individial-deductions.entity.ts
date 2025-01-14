@@ -20,7 +20,7 @@ export class IndividualDeduction {
     @Column({ nullable: false })
     employeeId: string;
 
-    @ManyToOne(() => Employee, (employee) => employee.individuals, {
+    @ManyToOne(() => Employee, (employee) => employee.individualDeductions, {
         onDelete: 'CASCADE',
         nullable: false
     })
@@ -62,7 +62,7 @@ export class IndividualDeduction {
     @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updatedAt: Date; // Updated timestamp
 
-    @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.individual)
+    @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.individualDeduction)
     payrollAccounts: PayrollAccount[];
 
     // Optional: Additional logic for default permissions can be handled via guards or roles in NestJS

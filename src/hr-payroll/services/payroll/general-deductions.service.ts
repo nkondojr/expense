@@ -143,7 +143,7 @@ export class GeneralDeductionsService {
       const savedGeneral = await this.generalDeductionsRepository.save(generalDeduction);
 
       // Associate saved general deduction with payroll accounts and save
-      payrollAccountsEntities.forEach((account) => (account.general = savedGeneral));
+      payrollAccountsEntities.forEach((account) => (account.generalDeduction = savedGeneral));
       await this.payrollAccountsRepository.save(payrollAccountsEntities);
 
       return { message: 'General deduction created successfully' };
@@ -234,14 +234,14 @@ export class GeneralDeductionsService {
 
         const payrollAccount = new PayrollAccount();
         payrollAccount.type = 'General';
-        payrollAccount.general = existingDeduction;
+        payrollAccount.generalDeduction = existingDeduction;
         payrollAccount.liabilityAccount = liabilityAccount;
         payrollAccount.expenseAccount = expenseAccount;
         payrollAccountsEntities.push(payrollAccount);
       }
 
       // Update payroll accounts by first removing old ones and then saving new ones
-      await this.payrollAccountsRepository.delete({ general: existingDeduction });
+      await this.payrollAccountsRepository.delete({ generalDeduction: existingDeduction });
       await this.payrollAccountsRepository.save(payrollAccountsEntities);
     }
 

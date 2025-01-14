@@ -4,7 +4,7 @@ import { Employee } from '../employees/employees.entity';
 import { GeneralDeduction } from './general-deductions.entity';
 
 @Entity('hr_payroll_general')
-@Index('general_index', ['general'])
+@Index('general_index', ['generalDeduction'])
 @Index('employee_index', ['employee'])
 @Index('payroll_index', ['payroll'])
 export class PayrollGeneral {
@@ -24,14 +24,14 @@ export class PayrollGeneral {
 
     @Index()
     @Column({ nullable: false })
-    generalId: string;
+    generalDeductionId: string;
 
-    @ManyToOne(() => GeneralDeduction, (general) => general.payrollGenerals, {
+    @ManyToOne(() => GeneralDeduction, (generalDeduction) => generalDeduction.payrollGenerals, {
         onDelete: 'CASCADE',
         nullable: false
     })
-    @JoinColumn({ name: 'generalId' })
-    general: GeneralDeduction;
+    @JoinColumn({ name: 'generalDeductionId' })
+    generalDeduction: GeneralDeduction;
 
     @Column({ nullable: false })
     employeeId: string;

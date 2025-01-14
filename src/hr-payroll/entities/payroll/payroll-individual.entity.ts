@@ -3,7 +3,7 @@ import { Payroll } from './payroll.entity';
 import { IndividualDeduction } from './individial-deductions.entity';
 
 @Entity('hr_payroll_individual')
-@Index('employee_general_index', ['individual'])
+@Index('employee_general_index', ['individualDeduction'])
 export class PayrollIndividual {
 
     @PrimaryGeneratedColumn('uuid')
@@ -14,7 +14,7 @@ export class PayrollIndividual {
     payroll: Payroll; // Foreign key to Payroll entity
 
     @ManyToOne(() => IndividualDeduction, { nullable: true, onDelete: 'SET NULL' })
-    individual: IndividualDeduction; // Foreign key to Individual entity
+    individualDeduction: IndividualDeduction; // Foreign key to Individual entity
 
     @Column('decimal', { precision: 20, scale: 4 })
     amount: string; // Amount for employee payroll general

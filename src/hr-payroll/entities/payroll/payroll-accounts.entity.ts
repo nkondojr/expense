@@ -4,7 +4,7 @@ import { IndividualDeduction } from './individial-deductions.entity';
 import { Account } from 'src/accounts/entities/account.entity';
 
 @Entity('hr_payroll_account')
-@Index('deduction_account_index', ['general', 'individual']) // Optional: Index for general and individual fields
+@Index('deduction_account_index', ['generalDeduction', 'individualDeduction']) // Optional: Index for general and individual fields
 export class PayrollAccount {
 
     @PrimaryGeneratedColumn('uuid')
@@ -15,25 +15,25 @@ export class PayrollAccount {
 
     @Index()
     @Column({ nullable: true })
-    generalId: string;
+    generalDeductionId: string;
 
-    @ManyToOne(() => GeneralDeduction, (general) => general.payrollAccounts, {
+    @ManyToOne(() => GeneralDeduction, (generalDeduction) => generalDeduction.payrollAccounts, {
         onDelete: 'CASCADE',
         nullable: true
     })
-    @JoinColumn({ name: 'generalId' })
-    general: GeneralDeduction;
+    @JoinColumn({ name: 'generalDeductionId' })
+    generalDeduction: GeneralDeduction;
 
     @Index()
     @Column({ nullable: true })
-    individualId: string;
+    individualDeductionId: string;
 
-    @ManyToOne(() => IndividualDeduction, (individual) => individual.payrollAccounts, {
+    @ManyToOne(() => IndividualDeduction, (individualDeduction) => individualDeduction.payrollAccounts, {
         onDelete: 'CASCADE',
         nullable: true
     })
-    @JoinColumn({ name: 'individualId' })
-    individual: IndividualDeduction;
+    @JoinColumn({ name: 'individualDeductionId' })
+    individualDeduction: IndividualDeduction;
 
     @Index()
     @ManyToOne(() => Account, { eager: true })  // Ensure product is loaded eagerly

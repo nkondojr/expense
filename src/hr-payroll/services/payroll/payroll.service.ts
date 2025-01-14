@@ -119,7 +119,45 @@ export class PayrollsService {
         );
       }
 
+      // Retrieve the sum of generalDeductions for the employee from the GeneralDeduction table
+      const sumOfGeneralDeductions = await this.generalDeductionsRepository
+        .createQueryBuilder('generalDeduction')
+        .leftJoinAndSelect('generalDeduction.payrollGenerals', 'payrollGenerals')
+        .select('SUM(generalDeduction.value)', 'total')
+        .where('payrollGenerals.employeeId = :employeeId', { employeeId: item.employeeId })
+        .getRawOne();
+
+      const sumOfValues = sumOfGeneralDeductions?.total || 0;
+
+        // Retrieve the sum of individualDeductions for the employee from the individualDeduction table
+      const sumOfIndividualDeductions = await this.individualDeductionsRepository
+      .createQueryBuilder('individualDeduction')
+      .select('SUM(individualDeduction.value)', 'total')
+      .where('individualDeduction.employeeId = :employeeId', { employeeId: item.employeeId })
+      .getRawOne();
+
+      const sumOfValue = sumOfIndividualDeductions?.total || 0;
+
+      const calculatePayeValue = (amount: number): number => {
+        if (amount > 1000000) {
+          return 128000 + (amount - 1000000) * 0.3;
+        } else if (amount > 760000) {
+          return 68000 + (amount - 760000) * 0.25;
+        } else if (amount > 520000) {
+          return 20000 + (amount - 520000) * 0.2;
+        } else if (amount > 270000) {
+          return (amount - 270000) * 0.08;
+        } else {
+          return 0;
+        }
+      };
+
       const payrollItem = new PayrollItem();
+      payrollItem.basicSalary = employeeAllocation.basicSalary;
+      payrollItem.grossSalary = (Number(payrollItem.basicSalary) + sumOfValues).toFixed(2); // Ensure two-decimal precision
+      payrollItem.taxableIncome = (Number(payrollItem.grossSalary) - calculatePayeValue(Number(payrollItem.grossSalary))).toFixed(2);
+      payrollItem.netSalary = (Number(payrollItem.taxableIncome) - sumOfValue).toFixed(2); // Ensure two-decimal precision
+      payrollItem.totalCost += payrollItem.grossSalary; // Adjust if needed
       payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
       payrollItemsEntities.push(payrollItem);
     }

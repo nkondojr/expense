@@ -176,8 +176,8 @@ export class Employee {
     @OneToMany(() => WorkHistory, workHistories => workHistories.employee)
     workHistories: WorkHistory[];
 
-    @OneToMany(() => IndividualDeduction, individuals => individuals.employee)
-    individuals: IndividualDeduction[];
+    @OneToMany(() => IndividualDeduction, individualDeductions => individualDeductions.employee)
+    individualDeductions: IndividualDeduction[];
 
     @OneToMany(() => PayrollItem, payrollItems => payrollItems.employee)
     payrollItems: PayrollItem[];

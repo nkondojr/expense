@@ -156,7 +156,7 @@ export class IndividualDeductionsService {
       const savedIndividual = await this.individualDeductionsRepository.save(individualDeduction);
 
       // Associate saved individual deduction with payroll accounts and save
-      payrollAccountsEntities.forEach((account) => (account.individual = savedIndividual));
+      payrollAccountsEntities.forEach((account) => (account.individualDeduction = savedIndividual));
       await this.payrollAccountsRepository.save(payrollAccountsEntities);
 
       return { message: 'Individual deduction created successfully' };
@@ -255,14 +255,14 @@ export class IndividualDeductionsService {
 
         const payrollAccount = new PayrollAccount();
         payrollAccount.type = 'Individual';
-        payrollAccount.individual = existingDeduction;
+        payrollAccount.individualDeduction = existingDeduction;
         payrollAccount.liabilityAccount = liabilityAccount;
         payrollAccount.expenseAccount = expenseAccount;
         payrollAccountsEntities.push(payrollAccount);
       }
 
       // Update payroll accounts by first removing old ones and then saving new ones
-      await this.payrollAccountsRepository.delete({ individual: existingDeduction });
+      await this.payrollAccountsRepository.delete({ individualDeduction: existingDeduction });
       await this.payrollAccountsRepository.save(payrollAccountsEntities);
     }
 

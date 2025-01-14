@@ -80,9 +80,9 @@ export class GeneralDeduction {
     @UpdateDateColumn({ name: 'updatedAt' })
     updatedAt: Date;
 
-    @OneToMany(() => PayrollGeneral, (payrollGenerals) => payrollGenerals.general)
+    @OneToMany(() => PayrollGeneral, (payrollGenerals) => payrollGenerals.generalDeduction)
     payrollGenerals: PayrollGeneral[];
 
-    @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.general)
+    @OneToMany(() => PayrollAccount, (payrollAccounts) => payrollAccounts.generalDeduction)
     payrollAccounts: PayrollAccount[];
 }
