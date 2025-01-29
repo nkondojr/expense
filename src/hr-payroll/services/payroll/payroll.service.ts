@@ -153,11 +153,11 @@ export class PayrollsService {
       };
 
       const payrollItem = new PayrollItem();
-      payrollItem.basicSalary = employeeAllocation.basicSalary;
-      payrollItem.grossSalary = (Number(payrollItem.basicSalary) + sumOfValues).toFixed(2); // Ensure two-decimal precision
+      payrollItem.basicSalary = (Number(employeeAllocation.basicSalary) || 0).toFixed(2);
+      payrollItem.grossSalary = (Number(payrollItem.basicSalary) + sumOfValues).toFixed(2);
       payrollItem.taxableIncome = (Number(payrollItem.grossSalary) - calculatePayeValue(Number(payrollItem.grossSalary))).toFixed(2);
-      payrollItem.netSalary = (Number(payrollItem.taxableIncome) - sumOfValue).toFixed(2); // Ensure two-decimal precision
-      payrollItem.totalCost += payrollItem.grossSalary; // Adjust if needed
+      payrollItem.netSalary = (Number(payrollItem.taxableIncome) - sumOfValue).toFixed(2);
+      payrollItem.totalCost = (Number(payrollItem.grossSalary) || 0).toFixed(2);
       payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
       payrollItemsEntities.push(payrollItem);
     }
