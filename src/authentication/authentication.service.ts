@@ -31,7 +31,7 @@ export class AuthenticationService {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   // ***********************************************************************************************************************************************
   async signIn(createAuthenticationDto: CreateAuthenticationDto) {
@@ -39,21 +39,33 @@ export class AuthenticationService {
       createAuthenticationDto.email,
       createAuthenticationDto.password,
     );
+
     if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }
+
     const payload = { sub: user.id, email: user.email };
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
     });
 
-    // Store the refresh token in redis
+    // Store the refresh token in Redis
     await this.refreshTokenIdsStorage.insert(user.id, refreshToken);
+
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
       message: 'Logged in successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        mobile: user.mobile,
+        is_active: user.is_active,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+      },
     };
   }
 

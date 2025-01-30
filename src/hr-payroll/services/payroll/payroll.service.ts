@@ -50,7 +50,7 @@ export class PayrollsService {
 
     // Ensure date is not in the past
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set time to the day for comparison
+    today.setHours(0, 0, 0, 0);
 
     if (new Date(date) > today) {
       throw new BadRequestException('The date cannot be after today.');
@@ -70,6 +70,8 @@ export class PayrollsService {
     }
 
     const payrollItemsEntities = [];
+    let sumOfAllCalculatedPayrollItem = 0; // Initialize total cost
+
     for (const item of payrollItems) {
       // Check if the employee exists
       const checkEmployee = await this.employeesRepository.findOne({
@@ -110,7 +112,7 @@ export class PayrollsService {
 
       // Find the active employee allocation
       const employeeAllocation = checkEmployee.allocations.find(
-        (allocation) => allocation.isActive, // Assuming a field to determine active bank
+        (allocation) => allocation.isActive,
       );
 
       if (!employeeAllocation) {
@@ -129,15 +131,16 @@ export class PayrollsService {
 
       const sumOfValues = sumOfGeneralDeductions?.total || 0;
 
-        // Retrieve the sum of individualDeductions for the employee from the individualDeduction table
+      // Retrieve the sum of individualDeductions for the employee from the IndividualDeduction table
       const sumOfIndividualDeductions = await this.individualDeductionsRepository
-      .createQueryBuilder('individualDeduction')
-      .select('SUM(individualDeduction.value)', 'total')
-      .where('individualDeduction.employeeId = :employeeId', { employeeId: item.employeeId })
-      .getRawOne();
+        .createQueryBuilder('individualDeduction')
+        .select('SUM(individualDeduction.value)', 'total')
+        .where('individualDeduction.employeeId = :employeeId', { employeeId: item.employeeId })
+        .getRawOne();
 
       const sumOfValue = sumOfIndividualDeductions?.total || 0;
 
+      // PAYE Calculation Function
       const calculatePayeValue = (amount: number): number => {
         if (amount > 1000000) {
           return 128000 + (amount - 1000000) * 0.3;
@@ -156,10 +159,12 @@ export class PayrollsService {
       payrollItem.basicSalary = (Number(employeeAllocation.basicSalary) || 0).toFixed(2);
       payrollItem.grossSalary = (Number(payrollItem.basicSalary) + sumOfValues).toFixed(2);
       payrollItem.taxableIncome = (Number(payrollItem.grossSalary) - calculatePayeValue(Number(payrollItem.grossSalary))).toFixed(2);
-      payrollItem.netSalary = (Number(payrollItem.taxableIncome) - sumOfValue).toFixed(2);
+      payrollItem.netSalary = (Number(payrollItem.taxableIncome) - (sumOfValue + calculatePayeValue(Number(payrollItem.grossSalary)))).toFixed(2);
       payrollItem.totalCost = (Number(payrollItem.grossSalary) || 0).toFixed(2);
-      payrollItem.employee = { id: item.employeeId } as any; // Assuming employee entity is referenced by ID
+      payrollItem.employee = { id: item.employeeId } as any;
+
       payrollItemsEntities.push(payrollItem);
+      sumOfAllCalculatedPayrollItem += Number(payrollItem.totalCost); // Accumulate total cost
     }
 
     // Generate the 'number' value
@@ -177,6 +182,7 @@ export class PayrollsService {
       date,
       financialYear: checkFinancialYear,
       number: newNumber,
+      totalCost: sumOfAllCalculatedPayrollItem.toFixed(2), // Ensure it's a string
     });
 
     const savedPayroll = await this.payrollsRepository.save(newPayroll);

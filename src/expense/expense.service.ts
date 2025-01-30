@@ -121,7 +121,7 @@ This is to inform you that a purchase has been made at ${organizationName}. The 
 For further details, please refer to the link: https://expense.ecu.co.tz/.`;
 
         // await this.messagingService.sendSms('255748867304', smsContent);
-        await this.messagingService.sendSms('255718352944', smsContent);
+        await this.messagingService.sendSms('255748867304', smsContent);
       } catch (smsError) {
         console.error('Error sending SMS:', smsError.response?.data || smsError.text);
       }
