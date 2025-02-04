@@ -302,10 +302,10 @@ export class ReportsService {
         const endOfToday = now.clone().endOf('day').toDate();
 
         try {
-            // Fetch today's expenses
+            // Fetch today's expenses based on `created_at`
             const todayExpenses = await this.expenseRepository.find({
                 where: {
-                    date: Between(startOfToday, endOfToday),
+                    created_at: Between(startOfToday, endOfToday),
                 },
                 relations: ['expenseItems', 'expenseItems.product', 'expenseItems.product.category'],
             });
