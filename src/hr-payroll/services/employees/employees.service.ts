@@ -224,7 +224,12 @@ export class EmployeesService {
     const query = this.employeesRepository
       .createQueryBuilder('employees')
       .leftJoinAndSelect('employees.user', 'user')
-      .select(['employees', 'user.username', 'user.mobile', 'user.email']);
+      .select([
+        'employees',
+        'user.username',
+        'user.mobile',
+        'user.email'
+      ]);
 
     if (searchTerm) {
       query.where(
